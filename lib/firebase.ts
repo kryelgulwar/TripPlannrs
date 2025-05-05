@@ -24,10 +24,14 @@ let storage
 
 // Only initialize Firebase if we're in the browser and it hasn't been initialized yet
 if (typeof window !== "undefined") {
-  app = !getApps().length ? initializeApp(firebaseConfig) : getApp()
-  auth = getAuth(app)
-  db = getFirestore(app)
-  storage = getStorage(app)
+  try {
+    app = !getApps().length ? initializeApp(firebaseConfig) : getApp()
+    auth = getAuth(app)
+    db = getFirestore(app)
+    storage = getStorage(app)
+  } catch (error) {
+    console.error("Firebase initialization error:", error)
+  }
 }
 
 export { app, auth, db, storage }

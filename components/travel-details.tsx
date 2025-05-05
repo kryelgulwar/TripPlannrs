@@ -6,64 +6,53 @@ interface TravelDetailsProps {
 }
 
 export function TravelDetails({ travelDetails = { arrival: {}, departure: {} } }: TravelDetailsProps) {
+  // Fallback transportation if none are provided
+  const fallbackTransportation = [
+    {
+      type: "Flight",
+      details: "Recommended airlines: Local Carrier, International Airways",
+      notes: "Book at least 2 months in advance for better rates.",
+    },
+    {
+      type: "Local Transport",
+      details: "Efficient public transportation available in most areas",
+      notes: "Consider getting a transit pass for unlimited rides.",
+    },
+    {
+      type: "Car Rental",
+      details: "Recommended for exploring rural areas",
+      notes: "International driving permit may be required.",
+    },
+  ]
+
   // Create transportation array from travel details
   const createTransportationFromDetails = () => {
     const transportation = []
 
-    if (travelDetails.arrival && Object.keys(travelDetails.arrival).length > 0) {
-      const arrivalMode = travelDetails.arrival.mode?.toLowerCase() || "flight"
-      const icon = getTransportIcon(arrivalMode)
-
+    if (travelDetails && travelDetails.arrival && Object.keys(travelDetails.arrival).length > 0) {
       transportation.push({
         type: "Arrival",
-        icon,
         details: `From ${travelDetails.arrival.from || "Origin"} to ${travelDetails.arrival.to || "Destination"}`,
-        notes: `${travelDetails.arrival.airline || "Not specified"} - ${travelDetails.arrival.departureTime || "Not specified"} to ${travelDetails.arrival.arrivalTime || "Not specified"}`,
+        notes: travelDetails.arrival.notes || "No additional details available.",
       })
     }
 
-    if (travelDetails.departure && Object.keys(travelDetails.departure).length > 0) {
-      const departureMode = travelDetails.departure.mode?.toLowerCase() || "flight"
-      const icon = getTransportIcon(departureMode)
-
+    if (travelDetails && travelDetails.departure && Object.keys(travelDetails.departure).length > 0) {
       transportation.push({
         type: "Departure",
-        icon,
         details: `From ${travelDetails.departure.from || "Origin"} to ${travelDetails.departure.to || "Destination"}`,
-        notes: `${travelDetails.departure.airline || "Not specified"} - ${travelDetails.departure.departureTime || "Not specified"} to ${travelDetails.departure.arrivalTime || "Not specified"}`,
+        notes: travelDetails.departure.notes || "No additional details available.",
       })
     }
 
     return transportation
   }
 
-  // Fallback transportation if none are provided
-  const fallbackTransportation = [
-    {
-      type: "Flight",
-      icon: <Plane className="h-5 w-5" />,
-      details: "Recommended airlines: Local Carrier, International Airways",
-      notes: "Book at least 2 months in advance for better rates.",
-    },
-    {
-      type: "Local Transport",
-      icon: <Train className="h-5 w-5" />,
-      details: "Efficient public transportation available in most areas",
-      notes: "Consider getting a transit pass for unlimited rides.",
-    },
-    {
-      type: "Car Rental",
-      icon: <Car className="h-5 w-5" />,
-      details: "Recommended for exploring rural areas",
-      notes: "International driving permit may be required.",
-    },
-  ]
-
   const transportation = createTransportationFromDetails()
   const displayTransportation = transportation.length > 0 ? transportation : fallbackTransportation
 
   // Map transport types to icons
-  function getTransportIcon(type: string) {
+  const getTransportIcon = (type: string) => {
     const lowerType = type.toLowerCase()
     if (lowerType.includes("flight") || lowerType.includes("plane") || lowerType.includes("air")) {
       return <Plane className="h-5 w-5" />
@@ -71,10 +60,9 @@ export function TravelDetails({ travelDetails = { arrival: {}, departure: {} } }
       return <Train className="h-5 w-5" />
     } else if (lowerType.includes("bus")) {
       return <Bus className="h-5 w-5" />
-    } else if (lowerType.includes("car") || lowerType.includes("rental")) {
+    } else {
       return <Car className="h-5 w-5" />
     }
-    return <Car className="h-5 w-5" />
   }
 
   return (
@@ -83,7 +71,7 @@ export function TravelDetails({ travelDetails = { arrival: {}, departure: {} } }
         <Card key={index}>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center text-xl">
-              {transport.icon || <Plane className="h-5 w-5" />}
+              {getTransportIcon(transport.type)}
               <span className="ml-2">{transport.type}</span>
             </CardTitle>
           </CardHeader>

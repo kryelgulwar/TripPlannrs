@@ -9,34 +9,34 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { TimePickerContent } from "./time-picker-content"
 
 interface TimePickerProps {
-  date: Date | undefined
+  date?: Date
   setDate: (date: Date | undefined) => void
 }
 
 export function TimePicker({ date, setDate }: TimePickerProps) {
-  const minuteRef = React.useRef<HTMLInputElement>(null)
-  const hourRef = React.useRef<HTMLInputElement>(null)
+  const [selectedTime, setSelectedTime] = React.useState<Date | undefined>(date)
+
+  React.useEffect(() => {
+    setSelectedTime(date)
+  }, [date])
 
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button
-          variant={"outline"}
+          variant="outline"
           className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}
         >
           <Clock className="mr-2 h-4 w-4" />
           {date ? (
-            date.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
+            <span>{date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
           ) : (
             <span>Pick a time</span>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-4">
-        <TimePickerContent date={date} setDate={setDate} hourRef={hourRef} minuteRef={minuteRef} />
+      <PopoverContent className="w-auto p-3">
+        <TimePickerContent date={selectedTime} setDate={setDate} />
       </PopoverContent>
     </Popover>
   )

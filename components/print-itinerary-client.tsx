@@ -57,7 +57,7 @@ export default function PrintItineraryClient({ itineraryId }: PrintItineraryClie
       const url = URL.createObjectURL(pdfBlob)
       const a = document.createElement("a")
       a.href = url
-      a.download = `${itinerary.destination}-itinerary.pdf`
+      a.download = `${itinerary.destination || "itinerary"}-itinerary.pdf`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -126,9 +126,10 @@ export default function PrintItineraryClient({ itineraryId }: PrintItineraryClie
           <h1 className="mb-6 text-center text-3xl font-bold">Generate PDF</h1>
 
           <div className="mb-6">
-            <h2 className="text-xl font-semibold">{itinerary.destination}</h2>
+            <h2 className="text-xl font-semibold">{itinerary.destination || "Your Trip"}</h2>
             <p className="text-muted-foreground">
-              {new Date(itinerary.startDate).toLocaleDateString()} - {new Date(itinerary.endDate).toLocaleDateString()}
+              {itinerary.startDate && new Date(itinerary.startDate).toLocaleDateString()} -
+              {itinerary.endDate && new Date(itinerary.endDate).toLocaleDateString()}
             </p>
           </div>
 

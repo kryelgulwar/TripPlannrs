@@ -7,7 +7,7 @@ interface DayPlanProps {
 
 export function DayPlan({ itinerary }: DayPlanProps) {
   // Ensure days is an array and has content
-  const days = itinerary.days || []
+  const days = itinerary?.days && Array.isArray(itinerary.days) ? itinerary.days : []
 
   if (!days.length) {
     return (
@@ -31,14 +31,16 @@ export function DayPlan({ itinerary }: DayPlanProps) {
           <CardContent>
             <div className="space-y-4">
               {day.activities &&
+                Array.isArray(day.activities) &&
                 day.activities.map((activity: any, actIndex: number) => (
                   <div key={actIndex}>
                     <div className="flex items-start justify-between">
                       <div>
                         <h3 className="font-medium">
-                          {activity.time || ""} {activity.title}
+                          {activity.time ? `${activity.time} ` : ""}
+                          {activity.title || "Activity"}
                         </h3>
-                        <p className="text-sm text-muted-foreground">{activity.description}</p>
+                        <p className="text-sm text-muted-foreground">{activity.description || ""}</p>
                       </div>
                       {activity.duration && (
                         <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">

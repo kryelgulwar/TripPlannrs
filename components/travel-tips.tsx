@@ -10,8 +10,6 @@ export function TravelTips({ tips = [] }: TravelTipsProps) {
   const fallbackTips = [
     {
       category: "Local Customs",
-      icon: <Globe className="h-5 w-5" />,
-      title: "Local Customs",
       content: [
         "Research local customs and etiquette before your trip",
         "Learn a few basic phrases in the local language",
@@ -19,8 +17,6 @@ export function TravelTips({ tips = [] }: TravelTipsProps) {
     },
     {
       category: "Food & Drink",
-      icon: <Utensils className="h-5 w-5" />,
-      title: "Food & Drink",
       content: [
         "Try local specialties and street food from vendors with long lines",
         "Carry a reusable water bottle and check if tap water is safe to drink",
@@ -28,14 +24,10 @@ export function TravelTips({ tips = [] }: TravelTipsProps) {
     },
     {
       category: "Weather Preparation",
-      icon: <Umbrella className="h-5 w-5" />,
-      title: "Weather Preparation",
       content: ["Check the weather forecast before packing", "Bring layers regardless of season"],
     },
     {
       category: "Money & Payments",
-      icon: <CreditCard className="h-5 w-5" />,
-      title: "Money & Payments",
       content: [
         "Notify your bank of travel plans to prevent card blocks",
         "Carry some local currency for small purchases",
@@ -43,8 +35,6 @@ export function TravelTips({ tips = [] }: TravelTipsProps) {
     },
     {
       category: "Emergency Contacts",
-      icon: <Phone className="h-5 w-5" />,
-      title: "Emergency Contacts",
       content: [
         "Save local emergency numbers in your phone",
         "Keep a digital and physical copy of important documents",
@@ -52,43 +42,28 @@ export function TravelTips({ tips = [] }: TravelTipsProps) {
     },
     {
       category: "Health & Safety",
-      icon: <AlertCircle className="h-5 w-5" />,
-      title: "Health & Safety",
       content: ["Pack a basic first aid kit with essential medications", "Research common scams in your destination"],
     },
   ]
 
-  const displayTips = tips.length > 0 ? tips : fallbackTips
+  const displayTips = tips && tips.length > 0 ? tips : fallbackTips
 
   // Helper function to get icon based on category
   const getIconForCategory = (category: string) => {
-    const lowerCategory = category.toLowerCase()
+    const lowerCategory = (category || "").toLowerCase()
     if (lowerCategory.includes("local") || lowerCategory.includes("custom")) {
       return <Globe className="h-5 w-5" />
-    } else if (lowerCategory.includes("food") || lowerCategory.includes("drink") || lowerCategory.includes("cuisine")) {
+    } else if (lowerCategory.includes("food") || lowerCategory.includes("drink")) {
       return <Utensils className="h-5 w-5" />
     } else if (lowerCategory.includes("weather") || lowerCategory.includes("climate")) {
       return <Umbrella className="h-5 w-5" />
-    } else if (
-      lowerCategory.includes("money") ||
-      lowerCategory.includes("payment") ||
-      lowerCategory.includes("currency")
-    ) {
+    } else if (lowerCategory.includes("money") || lowerCategory.includes("payment")) {
       return <CreditCard className="h-5 w-5" />
-    } else if (
-      lowerCategory.includes("emergency") ||
-      lowerCategory.includes("contact") ||
-      lowerCategory.includes("phone")
-    ) {
+    } else if (lowerCategory.includes("emergency") || lowerCategory.includes("contact")) {
       return <Phone className="h-5 w-5" />
-    } else if (
-      lowerCategory.includes("health") ||
-      lowerCategory.includes("safety") ||
-      lowerCategory.includes("security")
-    ) {
+    } else {
       return <AlertCircle className="h-5 w-5" />
     }
-    return <AlertCircle className="h-5 w-5" />
   }
 
   return (
@@ -97,8 +72,8 @@ export function TravelTips({ tips = [] }: TravelTipsProps) {
         <Card key={index}>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center text-xl">
-              {tip.icon || getIconForCategory(tip.category || tip.title || "")}
-              <span className="ml-2">{tip.title || tip.category || "Travel Tip"}</span>
+              {getIconForCategory(tip.category || tip.title || "")}
+              <span className="ml-2">{tip.category || tip.title || "Travel Tip"}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>

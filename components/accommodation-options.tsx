@@ -11,7 +11,6 @@ export function AccommodationOptions({ accommodations = [] }: AccommodationOptio
     {
       name: "Recommended Hotel",
       type: "Hotel",
-      icon: <Building className="h-5 w-5" />,
       location: "Central area, close to attractions",
       priceRange: "$$$",
       rating: 4.5,
@@ -21,7 +20,6 @@ export function AccommodationOptions({ accommodations = [] }: AccommodationOptio
     {
       name: "Budget-Friendly Hostel",
       type: "Hostel",
-      icon: <Home className="h-5 w-5" />,
       location: "Near public transportation",
       priceRange: "$",
       rating: 4.0,
@@ -31,7 +29,6 @@ export function AccommodationOptions({ accommodations = [] }: AccommodationOptio
     {
       name: "Luxury Apartment",
       type: "Apartment",
-      icon: <Home className="h-5 w-5" />,
       location: "Scenic neighborhood with great views",
       priceRange: "$$$$",
       rating: 4.8,
@@ -40,7 +37,7 @@ export function AccommodationOptions({ accommodations = [] }: AccommodationOptio
     },
   ]
 
-  const displayAccommodations = accommodations.length > 0 ? accommodations : fallbackAccommodations
+  const displayAccommodations = accommodations && accommodations.length > 0 ? accommodations : fallbackAccommodations
 
   return (
     <div className="space-y-6">
@@ -48,8 +45,8 @@ export function AccommodationOptions({ accommodations = [] }: AccommodationOptio
         <Card key={index}>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center text-xl">
-              {accommodation.icon || <Building className="h-5 w-5" />}
-              <span className="ml-2">{accommodation.name}</span>
+              {accommodation.type === "Hotel" ? <Building className="h-5 w-5" /> : <Home className="h-5 w-5" />}
+              <span className="ml-2">{accommodation.name || "Accommodation"}</span>
               <div className="ml-auto flex items-center text-sm">
                 {accommodation.rating && (
                   <span className="text-yellow-500 flex items-center">
@@ -81,8 +78,8 @@ export function AccommodationOptions({ accommodations = [] }: AccommodationOptio
                         key={i}
                         className="bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-xs flex items-center"
                       >
-                        {amenity.includes("WiFi") && <Wifi className="h-3 w-3 mr-1" />}
-                        {amenity.includes("Breakfast") && <Utensils className="h-3 w-3 mr-1" />}
+                        {amenity.includes("WiFi") ? <Wifi className="h-3 w-3 mr-1" /> : null}
+                        {amenity.includes("Breakfast") ? <Utensils className="h-3 w-3 mr-1" /> : null}
                         {amenity}
                       </span>
                     ))}
