@@ -6,10 +6,10 @@ import { CalendarIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { Input } from "@/components/ui/input"
+import { Calendar } from "@/components/ui/calendar-fixed"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
 
 interface DateTimePickerProps {
   date: Date | undefined
@@ -77,7 +77,7 @@ export function DateTimePicker({ date, setDate }: DateTimePickerProps) {
     <Popover>
       <PopoverTrigger asChild>
         <Button
-          variant={"outline"}
+          variant="outline"
           className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
