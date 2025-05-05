@@ -116,10 +116,10 @@ export default function ItineraryViewClient({ itineraryId }: ItineraryViewClient
           <DayPlan itinerary={itinerary} />
         </TabsContent>
         <TabsContent value="accommodations" className="mt-6">
-          <AccommodationOptions itinerary={itinerary} />
+          <AccommodationOptions accommodations={itinerary.accommodations} />
         </TabsContent>
         <TabsContent value="travel-tips" className="mt-6">
-          <TravelTips itinerary={itinerary} />
+          <TravelTips tips={itinerary.tips} />
         </TabsContent>
       </Tabs>
 

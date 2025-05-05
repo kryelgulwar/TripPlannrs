@@ -2,13 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Building, Home, MapPin, Star, Wifi, Utensils } from "lucide-react"
 
 interface AccommodationOptionsProps {
-  itinerary: any
+  accommodations?: any[]
 }
 
-export function AccommodationOptions({ itinerary }: AccommodationOptionsProps) {
-  // Ensure accommodations is an array and has content
-  const accommodations = itinerary.accommodations || []
-
+export function AccommodationOptions({ accommodations = [] }: AccommodationOptionsProps) {
   // Fallback accommodations if none are provided
   const fallbackAccommodations = [
     {
@@ -54,26 +51,32 @@ export function AccommodationOptions({ itinerary }: AccommodationOptionsProps) {
               {accommodation.icon || <Building className="h-5 w-5" />}
               <span className="ml-2">{accommodation.name}</span>
               <div className="ml-auto flex items-center text-sm">
-                <span className="text-yellow-500 flex items-center">
-                  <Star className="h-4 w-4 fill-yellow-500 mr-1" />
-                  {accommodation.rating}
-                </span>
-                <span className="ml-2 text-muted-foreground">{accommodation.priceRange}</span>
+                {accommodation.rating && (
+                  <span className="text-yellow-500 flex items-center">
+                    <Star className="h-4 w-4 fill-yellow-500 mr-1" />
+                    {accommodation.rating}
+                  </span>
+                )}
+                {accommodation.priceRange && (
+                  <span className="ml-2 text-muted-foreground">{accommodation.priceRange}</span>
+                )}
               </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-start">
-                <MapPin className="h-4 w-4 mr-2 mt-0.5 text-muted-foreground" />
-                <span>{accommodation.location}</span>
-              </div>
+              {accommodation.location && (
+                <div className="flex items-start">
+                  <MapPin className="h-4 w-4 mr-2 mt-0.5 text-muted-foreground" />
+                  <span>{accommodation.location}</span>
+                </div>
+              )}
 
-              <div>
-                <h4 className="text-sm font-medium mb-2">Amenities</h4>
-                <div className="flex flex-wrap gap-2">
-                  {accommodation.amenities &&
-                    accommodation.amenities.map((amenity: string, i: number) => (
+              {accommodation.amenities && accommodation.amenities.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium mb-2">Amenities</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {accommodation.amenities.map((amenity: string, i: number) => (
                       <span
                         key={i}
                         className="bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-xs flex items-center"
@@ -83,8 +86,9 @@ export function AccommodationOptions({ itinerary }: AccommodationOptionsProps) {
                         {amenity}
                       </span>
                     ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {accommodation.notes && (
                 <div>

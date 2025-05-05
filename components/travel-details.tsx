@@ -2,12 +2,40 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plane, Train, Bus, Car } from "lucide-react"
 
 interface TravelDetailsProps {
-  itinerary: any
+  travelDetails?: any
 }
 
-export function TravelDetails({ itinerary }: TravelDetailsProps) {
-  // Ensure transportation is an array and has content
-  const transportation = itinerary.transportation || []
+export function TravelDetails({ travelDetails = { arrival: {}, departure: {} } }: TravelDetailsProps) {
+  // Create transportation array from travel details
+  const createTransportationFromDetails = () => {
+    const transportation = []
+
+    if (travelDetails.arrival && Object.keys(travelDetails.arrival).length > 0) {
+      const arrivalMode = travelDetails.arrival.mode?.toLowerCase() || "flight"
+      const icon = getTransportIcon(arrivalMode)
+
+      transportation.push({
+        type: "Arrival",
+        icon,
+        details: `From ${travelDetails.arrival.from || "Origin"} to ${travelDetails.arrival.to || "Destination"}`,
+        notes: `${travelDetails.arrival.airline || "Not specified"} - ${travelDetails.arrival.departureTime || "Not specified"} to ${travelDetails.arrival.arrivalTime || "Not specified"}`,
+      })
+    }
+
+    if (travelDetails.departure && Object.keys(travelDetails.departure).length > 0) {
+      const departureMode = travelDetails.departure.mode?.toLowerCase() || "flight"
+      const icon = getTransportIcon(departureMode)
+
+      transportation.push({
+        type: "Departure",
+        icon,
+        details: `From ${travelDetails.departure.from || "Origin"} to ${travelDetails.departure.to || "Destination"}`,
+        notes: `${travelDetails.departure.airline || "Not specified"} - ${travelDetails.departure.departureTime || "Not specified"} to ${travelDetails.departure.arrivalTime || "Not specified"}`,
+      })
+    }
+
+    return transportation
+  }
 
   // Fallback transportation if none are provided
   const fallbackTransportation = [
@@ -31,10 +59,11 @@ export function TravelDetails({ itinerary }: TravelDetailsProps) {
     },
   ]
 
+  const transportation = createTransportationFromDetails()
   const displayTransportation = transportation.length > 0 ? transportation : fallbackTransportation
 
   // Map transport types to icons
-  const getTransportIcon = (type: string) => {
+  function getTransportIcon(type: string) {
     const lowerType = type.toLowerCase()
     if (lowerType.includes("flight") || lowerType.includes("plane") || lowerType.includes("air")) {
       return <Plane className="h-5 w-5" />
@@ -54,7 +83,7 @@ export function TravelDetails({ itinerary }: TravelDetailsProps) {
         <Card key={index}>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center text-xl">
-              {transport.icon || getTransportIcon(transport.type)}
+              {transport.icon || <Plane className="h-5 w-5" />}
               <span className="ml-2">{transport.type}</span>
             </CardTitle>
           </CardHeader>
