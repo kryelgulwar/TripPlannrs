@@ -9,9 +9,9 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 interface ComboboxProps {
-  options: { label: string; value: string }[]
+  options: { value: string; label: string }[]
   value?: string
-  onChange: (value: string) => void
+  onValueChange: (value: string) => void
   placeholder?: string
   emptyMessage?: string
 }
@@ -19,7 +19,7 @@ interface ComboboxProps {
 export function Combobox({
   options,
   value,
-  onChange,
+  onValueChange,
   placeholder = "Select option",
   emptyMessage = "No options found.",
 }: ComboboxProps) {
@@ -44,7 +44,7 @@ export function Combobox({
                   key={option.value}
                   value={option.value}
                   onSelect={(currentValue) => {
-                    onChange(currentValue === value ? "" : currentValue)
+                    onValueChange(currentValue === value ? "" : currentValue)
                     setOpen(false)
                   }}
                 >
