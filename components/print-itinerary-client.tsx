@@ -225,7 +225,6 @@ export default function PrintItineraryClient({ itineraryId }: PrintItineraryClie
           </div>
         </div>
 
-        {/* PDF Preview */}
         <div className="rounded-lg border shadow-sm">
           <div className="p-4">
             <h2 className="text-2xl font-bold">PDF Preview</h2>
