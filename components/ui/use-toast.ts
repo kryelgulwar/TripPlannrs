@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import type { ReactNode } from "react"
 
 // Adapted from shadcn/ui toast component
 import { useState, useContext, createContext } from "react"
@@ -24,7 +24,7 @@ const ToastContext = createContext<ToastContextType>({
   toasts: [],
 })
 
-export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
+export const ToastProvider = ({ children }: { children: ReactNode }) => {
   const [toasts, setToasts] = useState<Array<ToastProps & { id: string }>>([])
 
   const toast = (props: ToastProps) => {
