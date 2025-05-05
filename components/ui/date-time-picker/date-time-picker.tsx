@@ -1,8 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { CalendarIcon } from "lucide-react"
 import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -13,47 +13,29 @@ import { TimePickerContent } from "./time-picker-content"
 interface DateTimePickerProps {
   date: Date | undefined
   setDate: (date: Date | undefined) => void
-  className?: string
 }
 
-export function DateTimePicker({ date, setDate, className }: DateTimePickerProps) {
-  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(date)
+export function DateTimePicker({ date, setDate }: DateTimePickerProps) {
+  const [selectedDateTime, setSelectedDateTime] = React.useState<Date | undefined>(date)
 
   // Update the parent state when the date changes
   React.useEffect(() => {
-    setSelectedDate(date)
+    setSelectedDateTime(date)
   }, [date])
 
-  // Update the date with the selected time
-  const handleTimeChange = React.useCallback(
-    (time: { hour: number; minute: number }) => {
-      if (!selectedDate) return
-
-      const newDate = new Date(selectedDate)
-      newDate.setHours(time.hour)
-      newDate.setMinutes(time.minute)
-      setDate(newDate)
-    },
-    [selectedDate, setDate],
-  )
-
-  // Update the date with the selected date
   const handleDateChange = React.useCallback(
-    (date: Date | undefined) => {
-      setSelectedDate(date)
-
-      if (date) {
-        const newDate = new Date(date)
-        if (selectedDate) {
-          newDate.setHours(selectedDate.getHours())
-          newDate.setMinutes(selectedDate.getMinutes())
+    (selectedDate: Date | undefined) => {
+      if (selectedDate) {
+        const newDate = new Date(selectedDate)
+        if (selectedDateTime) {
+          newDate.setHours(selectedDateTime.getHours())
+          newDate.setMinutes(selectedDateTime.getMinutes())
         }
+        setSelectedDateTime(newDate)
         setDate(newDate)
-      } else {
-        setDate(undefined)
       }
     },
-    [selectedDate, setDate],
+    [selectedDateTime, setDate],
   )
 
   return (
@@ -61,23 +43,22 @@ export function DateTimePicker({ date, setDate, className }: DateTimePickerProps
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}
-          className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground", className)}
+          className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? format(date, "PPP HH:mm") : <span>Pick a date and time</span>}
+          {date ? format(date, "PPP p") : <span>Pick a date and time</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
-        <Calendar mode="single" selected={selectedDate} onSelect={handleDateChange} initialFocus />
-        {selectedDate && (
-          <div className="border-t border-border p-3">
+        <Calendar mode="single" selected={selectedDateTime} onSelect={handleDateChange} initialFocus />
+        {selectedDateTime && (
+          <div className="border-t border-border p-4">
             <TimePickerContent
-              value={
-                selectedDate
-                  ? { hour: selectedDate.getHours(), minute: selectedDate.getMinutes() }
-                  : { hour: 0, minute: 0 }
-              }
-              onChange={handleTimeChange}
+              date={selectedDateTime}
+              setDate={(newDate) => {
+                setSelectedDateTime(newDate)
+                setDate(newDate)
+              }}
             />
           </div>
         )}

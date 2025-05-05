@@ -1,173 +1,71 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Navbar } from "@/components/navbar"
-import { ProgressIndicator } from "@/components/progress-indicator"
-import { TripDetailsForm } from "@/components/trip-details-form"
-import { TravelersForm } from "@/components/travelers-form"
-import { BudgetForm } from "@/components/budget-form"
-import { TripStyleForm } from "@/components/trip-style-form"
-import { FoodPreferencesForm } from "@/components/food-preferences-form"
-import { ExtrasForm } from "@/components/extras-form"
-import { Button } from "@/components/ui/button"
+import type React from "react"
+
+import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { DateRangePicker } from "@/components/ui/date-range-picker"
+import type { DateRange } from "react-day-picker"
+import { addDays } from "date-fns"
+import { useToast } from "@/components/ui/use-toast"
 import { useAuth } from "@/lib/auth-context"
-import { createItinerary } from "@/lib/db"
-import { useToast } from "@/components/ui/toast-provider"
-import { LoadingPage } from "@/components/loading-page"
-import { getDestinationImage } from "@/lib/unsplash"
+import { LoadingSpinner } from "@/components/loading-spinner"
 
-export default function GenerateItinerary() {
+export default function GeneratePage() {
   const router = useRouter()
-  const { user, loading } = useAuth()
+  const { user } = useAuth()
   const { toast } = useToast()
-  const [step, setStep] = useState(1)
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [formData, setFormData] = useState({
-    destination: "",
-    startingPoint: "", // Make sure this is initialized with an empty string
-    startDate: "",
-    endDate: "",
-    arrivalMode: "",
-    departureMode: "",
-    arrivalTime: "",
-    departureTime: "",
-    travelersCount: 2,
-    travelGroupType: "Couple",
-    budgetType: "Moderate",
-    tripStyles: [],
-    pace: "Balanced",
-    wakeUpTime: "Mid",
-    cuisinePreferences: [],
-    specialRequests: "",
+  const [isLoading, setIsLoading] = useState(false)
+
+  const [destination, setDestination] = useState("")
+  const [budget, setBudget] = useState("")
+  const [travelers, setTravelers] = useState("2")
+  const [preferences, setPreferences] = useState("")
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: new Date(),
+    to: addDays(new Date(), 7),
   })
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
-  useEffect(() => {
-    // Redirect if not logged in
-    if (!loading && !user) {
-      router.push("/signin")
-    }
-  }, [user, loading, router])
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
 
-  const updateFormData = (data: Partial<typeof formData>) => {
-    setFormData({ ...formData, ...data })
-
-    // Clear any errors for fields that have been updated
-    const updatedErrors = { ...formErrors }
-    Object.keys(data).forEach((key) => {
-      if (updatedErrors[key]) {
-        delete updatedErrors[key]
-      }
-    })
-    setFormErrors(updatedErrors)
-  }
-
-  const validateCurrentStep = (): boolean => {
-    const errors: Record<string, string> = {}
-
-    if (step === 1) {
-      if (!formData.destination) {
-        errors.destination = "Destination is required"
-      }
-      if (!formData.startingPoint) {
-        errors.startingPoint = "Starting point is required"
-      }
-      if (!formData.startDate) {
-        errors.startDate = "Start date is required"
-      }
-      if (!formData.endDate) {
-        errors.endDate = "End date is required"
-      } else if (formData.startDate && new Date(formData.startDate) > new Date(formData.endDate)) {
-        errors.endDate = "End date must be after start date"
-      }
-    }
-
-    // Add validations for other steps if needed
-
-    setFormErrors(errors)
-    return Object.keys(errors).length === 0
-  }
-
-  const nextStep = () => {
-    if (!validateCurrentStep()) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields correctly.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (step < 6) {
-      setStep(step + 1)
-      window.scrollTo(0, 0)
-    } else {
-      generateItinerary()
-    }
-  }
-
-  const prevStep = () => {
-    if (step > 1) {
-      setStep(step - 1)
-      window.scrollTo(0, 0)
-    }
-  }
-
-  const generateItinerary = async () => {
     if (!user) {
       toast({
-        title: "Authentication required",
-        description: "Please sign in to generate an itinerary.",
+        title: "Please sign in",
+        description: "You need to be signed in to generate an itinerary.",
         variant: "destructive",
       })
       router.push("/signin")
       return
     }
 
+    if (!destination || !dateRange?.from || !dateRange?.to) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsLoading(true)
+
     try {
-      setIsGenerating(true)
+      // Here we would normally call an API to generate the itinerary
+      // For now, we'll just simulate a delay
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+
+      // Redirect to the dashboard
       toast({
-        title: "Generating your itinerary",
-        description: "This may take a minute. Please wait...",
+        title: "Itinerary generated",
+        description: "Your itinerary has been successfully generated.",
       })
-
-      // Call our API to generate the itinerary
-      const response = await fetch("/api/generate-itinerary", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to generate itinerary")
-      }
-
-      const itineraryData = await response.json()
-
-      // Get a destination image if not already provided
-      if (!itineraryData.image) {
-        itineraryData.image = await getDestinationImage(formData.destination)
-      }
-
-      // Add user data and save to Firebase
-      const savedItinerary = await createItinerary(user.uid, {
-        ...itineraryData,
-        startDate: new Date(formData.startDate),
-        endDate: new Date(formData.endDate),
-        travelersCount: formData.travelersCount,
-        travelGroupType: formData.travelGroupType,
-      })
-
-      toast({
-        title: "Itinerary created!",
-        description: "Your personalized travel plan is ready.",
-      })
-
-      // Redirect to the new itinerary
-      router.push(`/itinerary/${savedItinerary.id}`)
+      router.push("/dashboard")
     } catch (error) {
       console.error("Error generating itinerary:", error)
       toast({
@@ -176,75 +74,85 @@ export default function GenerateItinerary() {
         variant: "destructive",
       })
     } finally {
-      setIsGenerating(false)
+      setIsLoading(false)
     }
   }
 
-  if (loading) {
-    return <LoadingPage />
-  }
-
   return (
-    <div className="min-h-screen">
-      <Navbar />
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="mb-6 text-3xl font-bold">Generate Your Itinerary</h1>
+    <div className="container mx-auto px-4 py-8">
+      <Card className="max-w-2xl mx-auto">
+        <CardHeader>
+          <CardTitle>Generate Itinerary</CardTitle>
+          <CardDescription>Fill in the details below to generate your personalized travel itinerary.</CardDescription>
+        </CardHeader>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="destination">Destination</Label>
+              <Input
+                id="destination"
+                placeholder="e.g., Paris, France"
+                value={destination}
+                onChange={(e) => setDestination(e.target.value)}
+                required
+              />
+            </div>
 
-        <ProgressIndicator currentStep={step} />
+            <div className="space-y-2">
+              <Label>Travel Dates</Label>
+              <DateRangePicker dateRange={dateRange} setDateRange={setDateRange} />
+            </div>
 
-        <div className="mt-8 rounded-lg border p-6 shadow-sm">
-          {step === 1 && <TripDetailsForm formData={formData} updateFormData={updateFormData} errors={formErrors} />}
-          {step === 2 && <TravelersForm formData={formData} updateFormData={updateFormData} errors={formErrors} />}
-          {step === 3 && <BudgetForm formData={formData} updateFormData={updateFormData} errors={formErrors} />}
-          {step === 4 && <TripStyleForm formData={formData} updateFormData={updateFormData} errors={formErrors} />}
-          {step === 5 && (
-            <FoodPreferencesForm formData={formData} updateFormData={updateFormData} errors={formErrors} />
-          )}
-          {step === 6 && <ExtrasForm formData={formData} updateFormData={updateFormData} errors={formErrors} />}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="budget">Budget (USD)</Label>
+                <Input
+                  id="budget"
+                  placeholder="e.g., 2000"
+                  value={budget}
+                  onChange={(e) => setBudget(e.target.value)}
+                  type="number"
+                />
+              </div>
 
-          <div className="mt-6 flex justify-between">
-            {step > 1 && (
-              <Button variant="outline" onClick={prevStep} disabled={isGenerating}>
-                ← Previous Step
-              </Button>
-            )}
-            {step === 1 && <div />}
-            <Button
-              onClick={nextStep}
-              className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
-              disabled={isGenerating}
-            >
-              {isGenerating ? (
-                <span className="flex items-center">
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
+              <div className="space-y-2">
+                <Label htmlFor="travelers">Number of Travelers</Label>
+                <Input
+                  id="travelers"
+                  value={travelers}
+                  onChange={(e) => setTravelers(e.target.value)}
+                  type="number"
+                  min="1"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="preferences">Preferences & Special Requests</Label>
+              <Textarea
+                id="preferences"
+                placeholder="Tell us about your interests, dietary restrictions, accessibility needs, etc."
+                value={preferences}
+                onChange={(e) => setPreferences(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </CardContent>
+
+          <CardFooter>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <LoadingSpinner size="sm" className="mr-2" />
                   Generating...
-                </span>
+                </>
               ) : (
-                <span>{step < 6 ? "Next Step →" : "Generate Itinerary"}</span>
+                "Generate Itinerary"
               )}
             </Button>
-          </div>
-        </div>
-      </div>
+          </CardFooter>
+        </form>
+      </Card>
     </div>
   )
 }

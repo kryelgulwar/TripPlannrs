@@ -1,195 +1,175 @@
 "use client"
 
+import type React from "react"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Button } from "@/components/ui/button"
-import { CalendarIcon, Clock } from "lucide-react"
-import { format } from "date-fns"
-import { useState } from "react"
-import { cn } from "@/lib/utils"
+import { Textarea } from "@/components/ui/textarea"
+import { DateRangePicker } from "@/components/ui/date-range-picker"
+import type { DateRange } from "react-day-picker"
+import { addDays } from "date-fns"
+import { useToast } from "@/components/ui/use-toast"
+import { useAuth } from "@/lib/auth-context"
+import { LoadingSpinner } from "@/components/loading-spinner"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface TripDetailsFormProps {
-  formData: any
-  updateFormData: (data: any) => void
-  errors?: Record<string, string>
+  onSubmit: (data: any) => Promise<void>
+  isLoading: boolean
 }
 
-export function TripDetailsForm({ formData, updateFormData, errors = {} }: TripDetailsFormProps) {
-  const [startDate, setStartDate] = useState<Date | undefined>(
-    formData.startDate ? new Date(formData.startDate) : undefined,
-  )
-  const [endDate, setEndDate] = useState<Date | undefined>(formData.endDate ? new Date(formData.endDate) : undefined)
+export function TripDetailsForm({ onSubmit, isLoading }: TripDetailsFormProps) {
+  const router = useRouter()
+  const { user } = useAuth()
+  const { toast } = useToast()
 
-  const handleStartDateChange = (date: Date | undefined) => {
-    setStartDate(date)
-    if (date) {
-      updateFormData({ startDate: date.toISOString() })
+  const [destination, setDestination] = useState("")
+  const [budget, setBudget] = useState("")
+  const [travelers, setTravelers] = useState("2")
+  const [travelStyle, setTravelStyle] = useState("balanced")
+  const [preferences, setPreferences] = useState("")
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: new Date(),
+    to: addDays(new Date(), 7),
+  })
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!user) {
+      toast({
+        title: "Please sign in",
+        description: "You need to be signed in to generate an itinerary.",
+        variant: "destructive",
+      })
+      router.push("/signin")
+      return
     }
-  }
 
-  const handleEndDateChange = (date: Date | undefined) => {
-    setEndDate(date)
-    if (date) {
-      updateFormData({ endDate: date.toISOString() })
+    if (!destination || !dateRange?.from || !dateRange?.to) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      await onSubmit({
+        destination,
+        startDate: dateRange.from,
+        endDate: dateRange.to,
+        budget: budget ? Number.parseInt(budget) : undefined,
+        travelers: Number.parseInt(travelers),
+        travelStyle,
+        preferences,
+        userId: user.uid,
+      })
+    } catch (error) {
+      console.error("Error submitting form:", error)
+      toast({
+        title: "Error",
+        description: "Failed to process your request. Please try again.",
+        variant: "destructive",
+      })
     }
   }
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Step 1 of 6: Where, When & How</h2>
-
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="startingPoint" className={errors.startingPoint ? "text-destructive" : ""}>
-            Starting Point
-            {errors.startingPoint && <span className="ml-1 text-xs">*</span>}
-          </Label>
-          <div className="relative">
-            <Input
-              id="startingPoint"
-              placeholder="Enter your departure city, country, or region"
-              value={formData.startingPoint || ""}
-              onChange={(e) => updateFormData({ startingPoint: e.target.value })}
-              className={errors.startingPoint ? "border-destructive" : ""}
-            />
-            <button className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">🔍</button>
-          </div>
-          {errors.startingPoint && <p className="mt-1 text-xs text-destructive">{errors.startingPoint}</p>}
-        </div>
-
-        <div>
-          <Label htmlFor="destination" className={errors.destination ? "text-destructive" : ""}>
-            Destination
-            {errors.destination && <span className="ml-1 text-xs">*</span>}
-          </Label>
-          <div className="relative">
+    <Card>
+      <CardHeader>
+        <CardTitle>Trip Details</CardTitle>
+        <CardDescription>Fill in the details below to generate your personalized travel itinerary.</CardDescription>
+      </CardHeader>
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="destination">Destination</Label>
             <Input
               id="destination"
-              placeholder="Enter city, country, or region"
-              value={formData.destination || ""}
-              onChange={(e) => updateFormData({ destination: e.target.value })}
-              className={errors.destination ? "border-destructive" : ""}
+              placeholder="e.g., Paris, France"
+              value={destination}
+              onChange={(e) => setDestination(e.target.value)}
+              required
             />
-            <button className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">🔍</button>
-          </div>
-          {errors.destination && <p className="mt-1 text-xs text-destructive">{errors.destination}</p>}
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <Label className={errors.startDate ? "text-destructive" : ""}>
-              Start Date
-              {errors.startDate && <span className="ml-1 text-xs">*</span>}
-            </Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !startDate && "text-muted-foreground",
-                    errors.startDate && "border-destructive",
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, "PPP") : "Select date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar mode="single" selected={startDate} onSelect={handleStartDateChange} initialFocus />
-              </PopoverContent>
-            </Popover>
-            {errors.startDate && <p className="mt-1 text-xs text-destructive">{errors.startDate}</p>}
           </div>
 
-          <div>
-            <Label className={errors.endDate ? "text-destructive" : ""}>
-              End Date
-              {errors.endDate && <span className="ml-1 text-xs">*</span>}
-            </Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !endDate && "text-muted-foreground",
-                    errors.endDate && "border-destructive",
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? format(endDate, "PPP") : "Select date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar mode="single" selected={endDate} onSelect={handleEndDateChange} initialFocus />
-              </PopoverContent>
-            </Popover>
-            {errors.endDate && <p className="mt-1 text-xs text-destructive">{errors.endDate}</p>}
+          <div className="space-y-2">
+            <Label>Travel Dates</Label>
+            <DateRangePicker dateRange={dateRange} setDateRange={setDateRange} />
           </div>
-        </div>
 
-        <div>
-          <Label>Mode of Travel (Arrival)</Label>
-          <RadioGroup
-            value={formData.arrivalMode}
-            onValueChange={(value) => updateFormData({ arrivalMode: value })}
-            className="mt-2 flex flex-wrap gap-4"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="flight" id="flight" />
-              <Label htmlFor="flight">Flight</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="train" id="train" />
-              <Label htmlFor="train">Train</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="bus" id="bus" />
-              <Label htmlFor="bus">Bus</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="car" id="car" />
-              <Label htmlFor="car">Car</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="not-decided" id="not-decided" />
-              <Label htmlFor="not-decided">Not Decided</Label>
-            </div>
-          </RadioGroup>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <Label htmlFor="arrival-time">Arrival Time (Optional)</Label>
-            <div className="relative">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="budget">Budget (USD)</Label>
               <Input
-                id="arrival-time"
-                type="time"
-                value={formData.arrivalTime || ""}
-                onChange={(e) => updateFormData({ arrivalTime: e.target.value })}
+                id="budget"
+                placeholder="e.g., 2000"
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
+                type="number"
               />
-              <Clock className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="travelers">Number of Travelers</Label>
+              <Input
+                id="travelers"
+                value={travelers}
+                onChange={(e) => setTravelers(e.target.value)}
+                type="number"
+                min="1"
+              />
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="departure-time">Departure Time (Optional)</Label>
-            <div className="relative">
-              <Input
-                id="departure-time"
-                type="time"
-                value={formData.departureTime || ""}
-                onChange={(e) => updateFormData({ departureTime: e.target.value })}
-              />
-              <Clock className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="travelStyle">Travel Style</Label>
+            <Select value={travelStyle} onValueChange={setTravelStyle}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a travel style" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="budget">Budget-friendly</SelectItem>
+                <SelectItem value="balanced">Balanced</SelectItem>
+                <SelectItem value="luxury">Luxury</SelectItem>
+                <SelectItem value="adventure">Adventure</SelectItem>
+                <SelectItem value="cultural">Cultural</SelectItem>
+                <SelectItem value="relaxation">Relaxation</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </div>
-      </div>
-    </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="preferences">Preferences & Special Requests</Label>
+            <Textarea
+              id="preferences"
+              placeholder="Tell us about your interests, dietary restrictions, accessibility needs, etc."
+              value={preferences}
+              onChange={(e) => setPreferences(e.target.value)}
+              rows={4}
+            />
+          </div>
+        </CardContent>
+
+        <CardFooter>
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <LoadingSpinner size="sm" className="mr-2" />
+                Generating...
+              </>
+            ) : (
+              "Generate Itinerary"
+            )}
+          </Button>
+        </CardFooter>
+      </form>
+    </Card>
   )
 }

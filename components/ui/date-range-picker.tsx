@@ -11,11 +11,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 interface DateRangePickerProps {
   dateRange: DateRange | undefined
   setDateRange: (dateRange: DateRange | undefined) => void
+  className?: string
 }
 
-export function DateRangePicker({ dateRange, setDateRange }: DateRangePickerProps) {
+export function DateRangePicker({ dateRange, setDateRange, className }: DateRangePickerProps) {
   return (
-    <div className="grid gap-2">
+    <div className={cn("grid gap-2", className)}>
       <Popover>
         <PopoverTrigger asChild>
           <Button

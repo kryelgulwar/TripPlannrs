@@ -2,13 +2,14 @@
 
 import * as React from "react"
 import { format } from "date-fns"
-import { CalendarIcon, Check } from "lucide-react"
+import { CalendarIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
+import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface DateTimePickerProps {
   date: Date | undefined
@@ -16,77 +17,106 @@ interface DateTimePickerProps {
 }
 
 export function DateTimePicker({ date, setDate }: DateTimePickerProps) {
-  const [selectedTime, setSelectedTime] = React.useState<string | undefined>(date ? format(date, "HH:mm") : undefined)
+  const [selectedDateTime, setSelectedDateTime] = React.useState<Date | undefined>(date)
 
-  const times = React.useMemo(() => {
-    const times = []
-    for (let i = 0; i < 24; i++) {
-      for (let j = 0; j < 60; j += 30) {
-        const hour = i < 10 ? `0${i}` : `${i}`
-        const minute = j < 10 ? `0${j}` : `${j}`
-        times.push(`${hour}:${minute}`)
-      }
-    }
-    return times
-  }, [])
-
-  const handleSelect = React.useCallback(
-    (time: string) => {
-      setSelectedTime(time)
-
-      if (!date) return
-
-      const [hour, minute] = time.split(":")
-      const newDate = new Date(date)
-      newDate.setHours(Number.parseInt(hour, 10))
-      newDate.setMinutes(Number.parseInt(minute, 10))
-      setDate(newDate)
-    },
-    [date, setDate],
-  )
-
-  // Update the time when the date changes
+  // Update the parent state when the date changes
   React.useEffect(() => {
-    if (date) {
-      setSelectedTime(format(date, "HH:mm"))
-    }
+    setSelectedDateTime(date)
   }, [date])
 
+  const handleDateChange = React.useCallback(
+    (selectedDate: Date | undefined) => {
+      if (selectedDate) {
+        const newDate = new Date(selectedDate)
+        if (selectedDateTime) {
+          newDate.setHours(selectedDateTime.getHours())
+          newDate.setMinutes(selectedDateTime.getMinutes())
+        }
+        setSelectedDateTime(newDate)
+        setDate(newDate)
+      }
+    },
+    [selectedDateTime, setDate],
+  )
+
+  const handleTimeChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (!selectedDateTime) return
+
+      const [hours, minutes] = e.target.value.split(":").map(Number)
+      const newDate = new Date(selectedDateTime)
+      newDate.setHours(hours)
+      newDate.setMinutes(minutes)
+      setSelectedDateTime(newDate)
+      setDate(newDate)
+    },
+    [selectedDateTime, setDate],
+  )
+
+  const handlePeriodChange = React.useCallback(
+    (period: "AM" | "PM") => {
+      if (!selectedDateTime) return
+
+      const newDate = new Date(selectedDateTime)
+      let hours = newDate.getHours()
+
+      if (period === "AM" && hours >= 12) {
+        hours -= 12
+      } else if (period === "PM" && hours < 12) {
+        hours += 12
+      }
+
+      newDate.setHours(hours)
+      setSelectedDateTime(newDate)
+      setDate(newDate)
+    },
+    [selectedDateTime, setDate],
+  )
+
   return (
-    <div className="grid gap-2">
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant={"outline"}
-            className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}
-          >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {date ? format(date, "PPP HH:mm") : <span>Pick a date</span>}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto flex flex-col space-y-2 p-2">
-          <div className="space-y-2">
-            <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant={"outline"}
+          className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}
+        >
+          <CalendarIcon className="mr-2 h-4 w-4" />
+          {date ? format(date, "PPP p") : <span>Pick a date and time</span>}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0">
+        <div className="p-4 pb-0">
+          <Calendar mode="single" selected={selectedDateTime} onSelect={handleDateChange} initialFocus />
+        </div>
+        {selectedDateTime && (
+          <div className="border-t border-border p-4 flex items-end gap-2">
+            <div className="grid gap-1 text-center">
+              <div className="text-sm">Time</div>
+              <Input
+                type="time"
+                value={format(selectedDateTime, "HH:mm")}
+                onChange={handleTimeChange}
+                className="w-[120px]"
+              />
+            </div>
+            <div className="grid gap-1 text-center">
+              <div className="text-sm">Period</div>
+              <Select
+                value={selectedDateTime.getHours() >= 12 ? "PM" : "AM"}
+                onValueChange={(value) => handlePeriodChange(value as "AM" | "PM")}
+              >
+                <SelectTrigger className="w-[70px]">
+                  <SelectValue placeholder="AM/PM" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="AM">AM</SelectItem>
+                  <SelectItem value="PM">PM</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div className="px-4 pt-4 pb-2">
-            <p className="font-medium text-sm">Time:</p>
-          </div>
-          <Command>
-            <CommandInput placeholder="Search for a time..." />
-            <CommandList>
-              <CommandEmpty>No time found.</CommandEmpty>
-              <CommandGroup>
-                {times.map((time) => (
-                  <CommandItem key={time} value={time} onSelect={(value) => handleSelect(value)}>
-                    {time}
-                    {selectedTime === time && <Check className="ml-auto h-4 w-4 opacity-100" />}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-    </div>
+        )}
+      </PopoverContent>
+    </Popover>
   )
 }
