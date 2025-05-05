@@ -1,3 +1,5 @@
+"use client"
+
 import {
   collection,
   doc,
@@ -17,6 +19,8 @@ import type { User } from "firebase/auth"
 
 // User profile functions
 export const createUserProfile = async (user: User) => {
+  if (!db) return null
+
   const userRef = doc(db, "users", user.uid)
   const userSnap = await getDoc(userRef)
 
@@ -35,6 +39,8 @@ export const createUserProfile = async (user: User) => {
 
 // Itinerary functions
 export const createItinerary = async (userId: string, itineraryData: any) => {
+  if (!db) return null
+
   try {
     // Ensure the itinerary has the expected structure
     const sanitizedData = {
@@ -75,6 +81,8 @@ export const createItinerary = async (userId: string, itineraryData: any) => {
 }
 
 export const getUserItineraries = async (userId: string) => {
+  if (!db) return []
+
   try {
     const itinerariesRef = collection(db, "itineraries")
     const q = query(itinerariesRef, where("userId", "==", userId))
@@ -94,6 +102,8 @@ export const getUserItineraries = async (userId: string) => {
 
 // Update the getItinerary function to add more detailed logging
 export const getItinerary = async (itineraryId: string) => {
+  if (!db) return null
+
   try {
     console.log("DB: Fetching itinerary with ID:", itineraryId)
     const itineraryRef = doc(db, "itineraries", itineraryId)
@@ -129,6 +139,8 @@ export const getItinerary = async (itineraryId: string) => {
 }
 
 export const updateItinerary = async (itineraryId: string, itineraryData: any) => {
+  if (!db) return null
+
   try {
     const itineraryRef = doc(db, "itineraries", itineraryId)
     await updateDoc(itineraryRef, {
@@ -144,6 +156,8 @@ export const updateItinerary = async (itineraryId: string, itineraryData: any) =
 }
 
 export const deleteItinerary = async (itineraryId: string) => {
+  if (!db) return false
+
   try {
     const itineraryRef = doc(db, "itineraries", itineraryId)
     await deleteDoc(itineraryRef)

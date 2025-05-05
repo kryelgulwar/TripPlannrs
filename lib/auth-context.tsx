@@ -37,6 +37,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter()
 
   useEffect(() => {
+    // Only run auth state listener if auth is available (client-side)
+    if (!auth) {
+      setLoading(false)
+      return
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         // Get the ID token
@@ -60,6 +66,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [])
 
   const signInWithGoogle = async () => {
+    if (!auth) return
+
     try {
       const provider = new GoogleAuthProvider()
       await signInWithPopup(auth, provider)
@@ -70,6 +78,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   const signOut = async () => {
+    if (!auth) return
+
     try {
       await firebaseSignOut(auth)
       Cookies.remove("firebase-auth-token")
