@@ -1,72 +1,43 @@
-import Image from "next/image"
+import { Card, CardContent } from "@/components/ui/card"
+import { CalendarDays, MapPin, Users } from "lucide-react"
 
 interface ItineraryHeaderProps {
   itinerary: any
 }
 
 export function ItineraryHeader({ itinerary }: ItineraryHeaderProps) {
-  // Enhanced debug logging
-  console.log("ItineraryHeader received:", itinerary ? JSON.stringify(itinerary, null, 2) : "null/undefined")
-
-  if (!itinerary) {
-    console.log("ItineraryHeader: Itinerary is null or undefined")
-    return (
-      <div className="mb-8 overflow-hidden rounded-lg border bg-muted/20 p-6 text-center">
-        <p className="text-muted-foreground">Itinerary information not available.</p>
-      </div>
-    )
-  }
-
-  const formatDateRange = (start: Date | string, end: Date | string) => {
-    try {
-      const startDate = new Date(start)
-      const endDate = new Date(end)
-
-      // Check if dates are valid
-      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-        console.log("ItineraryHeader: Invalid date objects", { start, end })
-        return "Date range not available"
-      }
-
-      const startMonth = startDate.toLocaleString("default", { month: "long" })
-      const endMonth = endDate.toLocaleString("default", { month: "long" })
-
-      if (startMonth === endMonth) {
-        return `${startMonth} ${startDate.getDate()}-${endDate.getDate()}, ${endDate.getFullYear()}`
-      }
-
-      return `${startMonth} ${startDate.getDate()} - ${endMonth} ${endDate.getDate()}, ${endDate.getFullYear()}`
-    } catch (error) {
-      console.error("ItineraryHeader: Error formatting date range:", error)
-      return "Date range not available"
-    }
-  }
-
   return (
-    <div className="mb-8 overflow-hidden rounded-lg border">
-      <div className="relative h-64 w-full">
-        <Image
-          src={itinerary.image || "/placeholder.svg?height=200&width=300"}
-          alt={itinerary.destination || "Travel destination"}
-          fill
-          className="object-cover"
-        />
-      </div>
-      <div className="p-6">
-        <h1 className="mb-2 text-3xl font-bold">{itinerary.destination || "Your Trip"}</h1>
-        <p className="mb-4 text-muted-foreground">{itinerary.description || "Your personalized travel itinerary"}</p>
-        <div className="flex flex-wrap items-center gap-2 text-sm">
-          {itinerary.startDate && itinerary.endDate && (
-            <>
-              <span className="font-medium">{formatDateRange(itinerary.startDate, itinerary.endDate)}</span>
-              <span className="text-muted-foreground">•</span>
-            </>
+    <Card className="mb-6 bg-primary text-primary-foreground">
+      <CardContent className="p-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">{itinerary.destination}</h1>
+            <div className="flex flex-col sm:flex-row sm:space-x-6 text-primary-foreground/80">
+              <div className="flex items-center mb-2 sm:mb-0">
+                <CalendarDays className="h-4 w-4 mr-2" />
+                <span>
+                  {itinerary.startDate} - {itinerary.endDate}
+                </span>
+              </div>
+              <div className="flex items-center mb-2 sm:mb-0">
+                <MapPin className="h-4 w-4 mr-2" />
+                <span>{itinerary.destination}</span>
+              </div>
+              <div className="flex items-center">
+                <Users className="h-4 w-4 mr-2" />
+                <span>{itinerary.travelers || 2} Travelers</span>
+              </div>
+            </div>
+          </div>
+
+          {itinerary.budget && (
+            <div className="mt-4 md:mt-0 bg-primary-foreground/10 px-4 py-2 rounded-lg">
+              <span className="text-sm font-medium">Budget</span>
+              <div className="text-2xl font-bold">${itinerary.budget}</div>
+            </div>
           )}
-          <span className="text-muted-foreground">
-            {itinerary.travelersCount || 1} {(itinerary.travelersCount || 1) === 1 ? "Traveler" : "Travelers"}
-          </span>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }
