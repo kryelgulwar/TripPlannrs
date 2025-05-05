@@ -13,14 +13,13 @@ import { DataInspector } from "@/components/data-inspector"
 import { LoadingSpinner } from "@/components/loading-spinner"
 import { useToast } from "@/components/ui/use-toast"
 import { useAuth } from "@/lib/auth-context"
-import { db } from "@/lib/db"
-import { doc, getDoc } from "firebase/firestore"
+import { getItinerary, convertTimestamps } from "@/lib/db"
 
 interface ItineraryViewClientProps {
-  id: string
+  itineraryId: string
 }
 
-export function ItineraryViewClient({ id }: ItineraryViewClientProps) {
+export default function ItineraryViewClient({ itineraryId }: ItineraryViewClientProps) {
   const [itinerary, setItinerary] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -31,20 +30,17 @@ export function ItineraryViewClient({ id }: ItineraryViewClientProps) {
   useEffect(() => {
     async function fetchItinerary() {
       try {
-        if (!id) {
+        if (!itineraryId) {
           setError("No itinerary ID provided")
           setLoading(false)
           return
         }
 
-        const docRef = doc(db, "itineraries", id)
-        const docSnap = await getDoc(docRef)
+        const itineraryData = await getItinerary(itineraryId)
 
-        if (docSnap.exists()) {
-          setItinerary({ id: docSnap.id, ...docSnap.data() })
-        } else {
-          setError("Itinerary not found")
-        }
+        // Convert Firestore timestamps to JS Date objects
+        const formattedItinerary = convertTimestamps(itineraryData)
+        setItinerary(formattedItinerary)
       } catch (err) {
         console.error("Error fetching itinerary:", err)
         setError("Failed to load itinerary")
@@ -54,10 +50,10 @@ export function ItineraryViewClient({ id }: ItineraryViewClientProps) {
     }
 
     fetchItinerary()
-  }, [id])
+  }, [itineraryId])
 
   const handlePrintPDF = () => {
-    router.push(`/itinerary/${id}/pdf`)
+    router.push(`/itinerary/${itineraryId}/view/pdf`)
   }
 
   if (loading) {

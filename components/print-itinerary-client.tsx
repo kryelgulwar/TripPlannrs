@@ -6,15 +6,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { LoadingSpinner } from "@/components/loading-spinner"
 import { useToast } from "@/components/ui/use-toast"
-import { db } from "@/lib/db"
-import { doc, getDoc } from "firebase/firestore"
+import { getItinerary, convertTimestamps } from "@/lib/db"
 import { generatePDF } from "@/lib/pdf-generator"
 
 interface PrintItineraryClientProps {
-  id: string
+  itineraryId: string
 }
 
-export function PrintItineraryClient({ id }: PrintItineraryClientProps) {
+export default function PrintItineraryClient({ itineraryId }: PrintItineraryClientProps) {
   const [itinerary, setItinerary] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
@@ -25,20 +24,17 @@ export function PrintItineraryClient({ id }: PrintItineraryClientProps) {
   useEffect(() => {
     async function fetchItinerary() {
       try {
-        if (!id) {
+        if (!itineraryId) {
           setError("No itinerary ID provided")
           setLoading(false)
           return
         }
 
-        const docRef = doc(db, "itineraries", id)
-        const docSnap = await getDoc(docRef)
+        const itineraryData = await getItinerary(itineraryId)
 
-        if (docSnap.exists()) {
-          setItinerary({ id: docSnap.id, ...docSnap.data() })
-        } else {
-          setError("Itinerary not found")
-        }
+        // Convert Firestore timestamps to JS Date objects
+        const formattedItinerary = convertTimestamps(itineraryData)
+        setItinerary(formattedItinerary)
       } catch (err) {
         console.error("Error fetching itinerary:", err)
         setError("Failed to load itinerary")
@@ -48,14 +44,25 @@ export function PrintItineraryClient({ id }: PrintItineraryClientProps) {
     }
 
     fetchItinerary()
-  }, [id])
+  }, [itineraryId])
 
   const handleGeneratePDF = async () => {
     if (!itinerary) return
 
     setGenerating(true)
     try {
-      await generatePDF(itinerary)
+      const pdfBlob = generatePDF(itinerary)
+
+      // Create a download link
+      const url = URL.createObjectURL(pdfBlob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `${itinerary.destination}-itinerary.pdf`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+
       toast({
         title: "PDF Generated",
         description: "Your itinerary PDF has been generated and downloaded.",
@@ -121,7 +128,7 @@ export function PrintItineraryClient({ id }: PrintItineraryClientProps) {
           <div className="mb-6">
             <h2 className="text-xl font-semibold">{itinerary.destination}</h2>
             <p className="text-muted-foreground">
-              {itinerary.startDate} - {itinerary.endDate}
+              {new Date(itinerary.startDate).toLocaleDateString()} - {new Date(itinerary.endDate).toLocaleDateString()}
             </p>
           </div>
 
@@ -139,7 +146,7 @@ export function PrintItineraryClient({ id }: PrintItineraryClientProps) {
           </div>
 
           <div className="mt-6 text-center">
-            <Button variant="outline" onClick={() => router.push(`/itinerary/${id}`)}>
+            <Button variant="outline" onClick={() => router.push(`/itinerary/${itineraryId}/view`)}>
               Back to Itinerary
             </Button>
           </div>

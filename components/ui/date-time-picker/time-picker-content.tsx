@@ -1,93 +1,101 @@
 "use client"
 
 import * as React from "react"
-
-import { cn } from "@/lib/utils"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface TimePickerContentProps {
-  value: { hour: number; minute: number }
-  onChange: (value: { hour: number; minute: number }) => void
-  className?: string
+  date?: Date
+  setDate: (date: Date | undefined) => void
+  hourRef?: React.RefObject<HTMLInputElement>
+  minuteRef?: React.RefObject<HTMLInputElement>
 }
 
-export function TimePickerContent({ value, onChange, className }: TimePickerContentProps) {
-  const [hour, setHour] = React.useState(value.hour)
-  const [minute, setMinute] = React.useState(value.minute)
-  const [period, setPeriod] = React.useState<"AM" | "PM">(value.hour >= 12 ? "PM" : "AM")
+export function TimePickerContent({ date, setDate, hourRef, minuteRef }: TimePickerContentProps) {
+  const [hour, setHour] = React.useState<number>(date ? date.getHours() : 0)
+  const [minute, setMinute] = React.useState<number>(date ? date.getMinutes() : 0)
+  const [period, setPeriod] = React.useState<"AM" | "PM">(date ? (date.getHours() >= 12 ? "PM" : "AM") : "AM")
 
-  // Update internal state when value changes
+  // Update the date when the hour, minute, or period changes
   React.useEffect(() => {
-    setHour(value.hour > 12 ? value.hour - 12 : value.hour === 0 ? 12 : value.hour)
-    setMinute(value.minute)
-    setPeriod(value.hour >= 12 ? "PM" : "AM")
-  }, [value])
-
-  // Handle hour change
-  const handleHourChange = (newHour: number) => {
-    setHour(newHour)
-    const adjustedHour =
-      period === "PM" && newHour < 12 ? newHour + 12 : period === "AM" && newHour === 12 ? 0 : newHour
-    onChange({ hour: adjustedHour, minute })
-  }
-
-  // Handle minute change
-  const handleMinuteChange = (newMinute: number) => {
-    setMinute(newMinute)
-    onChange({ hour, minute: newMinute })
-  }
-
-  // Handle period change
-  const handlePeriodChange = (newPeriod: "AM" | "PM") => {
-    setPeriod(newPeriod)
-    if (newPeriod === "PM" && hour < 12) {
-      onChange({ hour: hour + 12, minute })
-    } else if (newPeriod === "AM" && hour === 12) {
-      onChange({ hour: 0, minute })
-    } else if (newPeriod === "AM" && hour > 12) {
-      onChange({ hour: hour - 12, minute })
+    if (!date) {
+      return
     }
-  }
+
+    const newDate = new Date(date)
+    newDate.setHours(period === "PM" ? (hour === 12 ? 12 : hour + 12) : hour === 12 ? 0 : hour)
+    newDate.setMinutes(minute)
+    setDate(newDate)
+  }, [hour, minute, period, date, setDate])
+
+  // Update the hour, minute, and period when the date changes
+  React.useEffect(() => {
+    if (!date) {
+      return
+    }
+
+    setHour(date.getHours() % 12 || 12)
+    setMinute(date.getMinutes())
+    setPeriod(date.getHours() >= 12 ? "PM" : "AM")
+  }, [date])
 
   return (
-    <div className={cn("flex items-end gap-2", className)}>
+    <div className="flex items-end gap-2">
       <div className="grid gap-1 text-center">
-        <div className="text-sm">Hours</div>
+        <Label htmlFor="hours" className="text-xs">
+          Hours
+        </Label>
         <Input
+          ref={hourRef}
+          id="hours"
+          className="w-16 text-center"
           value={hour.toString().padStart(2, "0")}
           onChange={(e) => {
             const value = Number.parseInt(e.target.value)
-            if (!isNaN(value) && value >= 1 && value <= 12) {
-              handleHourChange(value)
+            if (isNaN(value)) {
+              return
+            }
+            if (value < 1) {
+              setHour(1)
+            } else if (value > 12) {
+              setHour(12)
+            } else {
+              setHour(value)
             }
           }}
-          className="w-12 h-8"
-          type="number"
-          min={1}
-          max={12}
         />
       </div>
       <div className="grid gap-1 text-center">
-        <div className="text-sm">Minutes</div>
+        <Label htmlFor="minutes" className="text-xs">
+          Minutes
+        </Label>
         <Input
+          ref={minuteRef}
+          id="minutes"
+          className="w-16 text-center"
           value={minute.toString().padStart(2, "0")}
           onChange={(e) => {
             const value = Number.parseInt(e.target.value)
-            if (!isNaN(value) && value >= 0 && value <= 59) {
-              handleMinuteChange(value)
+            if (isNaN(value)) {
+              return
+            }
+            if (value < 0) {
+              setMinute(0)
+            } else if (value > 59) {
+              setMinute(59)
+            } else {
+              setMinute(value)
             }
           }}
-          className="w-12 h-8"
-          type="number"
-          min={0}
-          max={59}
         />
       </div>
-      <div className="grid gap-1">
-        <div className="text-sm">Period</div>
-        <Select value={period} onValueChange={(value) => handlePeriodChange(value as "AM" | "PM")}>
-          <SelectTrigger className="w-[60px] h-8">
+      <div className="grid gap-1 text-center">
+        <Label htmlFor="period" className="text-xs">
+          Period
+        </Label>
+        <Select value={period} onValueChange={(value: "AM" | "PM") => setPeriod(value)}>
+          <SelectTrigger id="period" className="w-16">
             <SelectValue placeholder="AM/PM" />
           </SelectTrigger>
           <SelectContent>
