@@ -36,15 +36,38 @@ export const createUserProfile = async (user: User) => {
 // Itinerary functions
 export const createItinerary = async (userId: string, itineraryData: any) => {
   try {
-    const itineraryRef = collection(db, "itineraries")
-    const docRef = await addDoc(itineraryRef, {
-      ...itineraryData,
+    // Ensure the itinerary has the expected structure
+    const sanitizedData = {
+      destination: itineraryData.destination || "Unknown Destination",
+      startingPoint: itineraryData.startingPoint || "Unknown Starting Point",
+      description: itineraryData.description || "Your personalized travel itinerary",
+      days: Array.isArray(itineraryData.days) ? itineraryData.days : [],
+      accommodations: Array.isArray(itineraryData.accommodations) ? itineraryData.accommodations : [],
+      tips: Array.isArray(itineraryData.tips) ? itineraryData.tips : [],
+      travelDetails: itineraryData.travelDetails || {
+        arrival: {
+          from: itineraryData.startingPoint,
+          to: itineraryData.destination,
+        },
+        departure: {
+          from: itineraryData.destination,
+          to: itineraryData.startingPoint,
+        },
+      },
+      image: itineraryData.image || "/placeholder.svg?height=400&width=800",
+      startDate: itineraryData.startDate,
+      endDate: itineraryData.endDate,
+      travelersCount: itineraryData.travelersCount || 1,
+      travelGroupType: itineraryData.travelGroupType || "Solo Traveler",
       userId,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-    })
+    }
 
-    return { id: docRef.id, ...itineraryData }
+    const itineraryRef = collection(db, "itineraries")
+    const docRef = await addDoc(itineraryRef, sanitizedData)
+
+    return { id: docRef.id, ...sanitizedData }
   } catch (error) {
     console.error("Error creating itinerary:", error)
     throw error
@@ -69,18 +92,38 @@ export const getUserItineraries = async (userId: string) => {
   }
 }
 
+// Update the getItinerary function to add more detailed logging
 export const getItinerary = async (itineraryId: string) => {
   try {
+    console.log("DB: Fetching itinerary with ID:", itineraryId)
     const itineraryRef = doc(db, "itineraries", itineraryId)
     const itinerarySnap = await getDoc(itineraryRef)
 
     if (itinerarySnap.exists()) {
-      return { id: itinerarySnap.id, ...itinerarySnap.data() }
+      const rawData = itinerarySnap.data()
+      console.log("DB: Raw data from Firebase:", rawData)
+
+      // Check for specific fields
+      console.log("DB: Days array exists:", !!rawData.days)
+      console.log("DB: Days array is array:", Array.isArray(rawData.days))
+      console.log("DB: Days array length:", Array.isArray(rawData.days) ? rawData.days.length : "N/A")
+
+      console.log("DB: Accommodations exists:", !!rawData.accommodations)
+      console.log("DB: Accommodations is array:", Array.isArray(rawData.accommodations))
+
+      console.log("DB: Tips exists:", !!rawData.tips)
+      console.log("DB: Tips is array:", Array.isArray(rawData.tips))
+
+      console.log("DB: Travel details exists:", !!rawData.travelDetails)
+
+      const data = { id: itinerarySnap.id, ...rawData }
+      return data
     } else {
+      console.error("DB: Itinerary not found with ID:", itineraryId)
       throw new Error("Itinerary not found")
     }
   } catch (error) {
-    console.error("Error getting itinerary:", error)
+    console.error("DB: Error getting itinerary:", error)
     throw error
   }
 }
@@ -111,19 +154,42 @@ export const deleteItinerary = async (itineraryId: string) => {
   }
 }
 
-// Helper function to convert Firestore timestamps to JS Date objects
+// Improve the convertTimestamps function to handle potential issues
 export const convertTimestamps = (obj: any) => {
-  if (!obj) return obj
+  if (!obj) {
+    console.log("convertTimestamps: Received null or undefined object")
+    return obj
+  }
 
-  const newObj = { ...obj }
+  try {
+    console.log("convertTimestamps: Processing object:", typeof obj, Array.isArray(obj) ? "array" : "object")
 
-  Object.keys(newObj).forEach((key) => {
-    if (newObj[key] instanceof Timestamp) {
-      newObj[key] = newObj[key].toDate()
-    } else if (typeof newObj[key] === "object" && newObj[key] !== null) {
-      newObj[key] = convertTimestamps(newObj[key])
+    // Handle arrays
+    if (Array.isArray(obj)) {
+      return obj.map((item) => convertTimestamps(item))
     }
-  })
 
-  return newObj
+    // Handle non-object types
+    if (typeof obj !== "object" || obj === null) {
+      return obj
+    }
+
+    const newObj = { ...obj }
+
+    Object.keys(newObj).forEach((key) => {
+      const value = newObj[key]
+
+      if (value instanceof Timestamp) {
+        console.log(`convertTimestamps: Converting timestamp for key "${key}"`)
+        newObj[key] = value.toDate()
+      } else if (typeof value === "object" && value !== null) {
+        newObj[key] = convertTimestamps(value)
+      }
+    })
+
+    return newObj
+  } catch (error) {
+    console.error("convertTimestamps: Error converting timestamps:", error)
+    return obj // Return the original object if conversion fails
+  }
 }

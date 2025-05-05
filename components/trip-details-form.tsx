@@ -43,6 +43,24 @@ export function TripDetailsForm({ formData, updateFormData, errors = {} }: TripD
 
       <div className="space-y-4">
         <div>
+          <Label htmlFor="startingPoint" className={errors.startingPoint ? "text-destructive" : ""}>
+            Starting Point
+            {errors.startingPoint && <span className="ml-1 text-xs">*</span>}
+          </Label>
+          <div className="relative">
+            <Input
+              id="startingPoint"
+              placeholder="Enter your departure city, country, or region"
+              value={formData.startingPoint || ""}
+              onChange={(e) => updateFormData({ startingPoint: e.target.value })}
+              className={errors.startingPoint ? "border-destructive" : ""}
+            />
+            <button className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">🔍</button>
+          </div>
+          {errors.startingPoint && <p className="mt-1 text-xs text-destructive">{errors.startingPoint}</p>}
+        </div>
+
+        <div>
           <Label htmlFor="destination" className={errors.destination ? "text-destructive" : ""}>
             Destination
             {errors.destination && <span className="ml-1 text-xs">*</span>}
@@ -51,7 +69,7 @@ export function TripDetailsForm({ formData, updateFormData, errors = {} }: TripD
             <Input
               id="destination"
               placeholder="Enter city, country, or region"
-              value={formData.destination}
+              value={formData.destination || ""}
               onChange={(e) => updateFormData({ destination: e.target.value })}
               className={errors.destination ? "border-destructive" : ""}
             />
@@ -151,7 +169,7 @@ export function TripDetailsForm({ formData, updateFormData, errors = {} }: TripD
               <Input
                 id="arrival-time"
                 type="time"
-                value={formData.arrivalTime}
+                value={formData.arrivalTime || ""}
                 onChange={(e) => updateFormData({ arrivalTime: e.target.value })}
               />
               <Clock className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -164,7 +182,7 @@ export function TripDetailsForm({ formData, updateFormData, errors = {} }: TripD
               <Input
                 id="departure-time"
                 type="time"
-                value={formData.departureTime}
+                value={formData.departureTime || ""}
                 onChange={(e) => updateFormData({ departureTime: e.target.value })}
               />
               <Clock className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

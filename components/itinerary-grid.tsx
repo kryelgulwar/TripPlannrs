@@ -87,7 +87,7 @@ export function ItineraryGrid({ itineraries }: ItineraryGridProps) {
           </CardContent>
           <CardFooter className="flex justify-between p-4 pt-0">
             <Button asChild variant="outline" size="sm" className="gap-2">
-              <Link href={`/itinerary/${itinerary.id}`}>
+              <Link href={`/itinerary/${itinerary.id}/view`}>
                 <Eye size={16} />
                 View
               </Link>

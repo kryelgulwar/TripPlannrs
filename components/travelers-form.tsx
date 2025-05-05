@@ -11,9 +11,10 @@ import { Input } from "@/components/ui/input"
 interface TravelersFormProps {
   formData: any
   updateFormData: (data: any) => void
+  errors?: Record<string, string>
 }
 
-export function TravelersForm({ formData, updateFormData }: TravelersFormProps) {
+export function TravelersForm({ formData, updateFormData, errors = {} }: TravelersFormProps) {
   const [travelGroupType, setTravelGroupType] = useState(formData.travelGroupType || "Solo Traveler")
   const [travelersCount, setTravelersCount] = useState(formData.travelersCount || 1)
   const [isDisabled, setIsDisabled] = useState(true)
@@ -35,49 +36,31 @@ export function TravelersForm({ formData, updateFormData }: TravelersFormProps) 
       setMinTravelers(2)
       setIsDisabled(false)
     }
-  }, [travelGroupType])
+  }, [travelGroupType, travelersCount])
 
-  // This effect was causing the infinite loop - we need to handle it differently
+  // Update parent form data when component mounts or when values change
   useEffect(() => {
-    // Only update parent form data when component mounts
-    const data = {
+    updateFormData({
       travelGroupType,
       travelersCount,
-    }
-    updateFormData(data)
-    // Intentionally not including updateFormData in dependencies
+    })
+    // We intentionally exclude updateFormData from dependencies to avoid infinite loops
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [travelGroupType, travelersCount])
 
   const handleSliderChange = (value: number[]) => {
     setTravelersCount(value[0])
-    updateFormData({
-      travelGroupType,
-      travelersCount: value[0],
-    })
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number.parseInt(e.target.value)
     if (!isNaN(value) && value >= minTravelers) {
       setTravelersCount(value)
-      updateFormData({
-        travelGroupType,
-        travelersCount: value,
-      })
     }
   }
 
   const handleGroupTypeChange = (value: string) => {
     setTravelGroupType(value)
-    // We'll update the parent form data after the state has been updated
-    // and after the useEffect for travelGroupType has run
-    setTimeout(() => {
-      updateFormData({
-        travelGroupType: value,
-        travelersCount: value === "Solo Traveler" ? 1 : value === "Couple" ? 2 : Math.max(3, travelersCount),
-      })
-    }, 0)
   }
 
   return (

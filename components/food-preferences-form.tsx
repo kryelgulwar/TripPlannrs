@@ -1,15 +1,19 @@
 "use client"
 
+import type React from "react"
+
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { useEffect } from "react"
 
 interface FoodPreferencesFormProps {
   formData: any
   updateFormData: (data: any) => void
+  errors?: Record<string, string>
 }
 
-export function FoodPreferencesForm({ formData, updateFormData }: FoodPreferencesFormProps) {
+export function FoodPreferencesForm({ formData, updateFormData, errors = {} }: FoodPreferencesFormProps) {
   const cuisineOptions = [
     { id: "local", label: "Local Cuisine" },
     { id: "international", label: "International" },
@@ -21,7 +25,20 @@ export function FoodPreferencesForm({ formData, updateFormData }: FoodPreference
     { id: "cafes", label: "Cafes & Bakeries" },
   ]
 
+  // Initialize cuisinePreferences if it doesn't exist
+  useEffect(() => {
+    if (!Array.isArray(formData.cuisinePreferences)) {
+      updateFormData({ cuisinePreferences: [] })
+    }
+  }, [formData.cuisinePreferences, updateFormData])
+
   const handleCuisineChange = (checked: boolean, value: string) => {
+    if (!Array.isArray(formData.cuisinePreferences)) {
+      const newPreferences = checked ? [value] : []
+      updateFormData({ cuisinePreferences: newPreferences })
+      return
+    }
+
     if (checked) {
       updateFormData({ cuisinePreferences: [...formData.cuisinePreferences, value] })
     } else {
@@ -29,6 +46,10 @@ export function FoodPreferencesForm({ formData, updateFormData }: FoodPreference
         cuisinePreferences: formData.cuisinePreferences.filter((cuisine: string) => cuisine !== value),
       })
     }
+  }
+
+  const handleDietaryRestrictionsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    updateFormData({ dietaryRestrictions: e.target.value })
   }
 
   return (
@@ -42,7 +63,7 @@ export function FoodPreferencesForm({ formData, updateFormData }: FoodPreference
             <div key={cuisine.id} className="flex items-center space-x-2">
               <Checkbox
                 id={cuisine.id}
-                checked={formData.cuisinePreferences.includes(cuisine.id)}
+                checked={Array.isArray(formData.cuisinePreferences) && formData.cuisinePreferences.includes(cuisine.id)}
                 onCheckedChange={(checked) => handleCuisineChange(!!checked, cuisine.id)}
               />
               <Label htmlFor={cuisine.id}>{cuisine.label}</Label>
@@ -57,6 +78,8 @@ export function FoodPreferencesForm({ formData, updateFormData }: FoodPreference
           id="dietary-restrictions"
           placeholder="E.g., gluten-free, nut allergies, halal, kosher, etc."
           className="mt-2"
+          value={formData.dietaryRestrictions || ""}
+          onChange={handleDietaryRestrictionsChange}
         />
       </div>
     </div>

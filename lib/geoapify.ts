@@ -1,10 +1,12 @@
 import { apiConfig } from "./api-config"
 
 export function getMapLink(location: string): string {
-  // Create a Google Maps-like URL with the location
-  return `https://maps.geoapify.com/v1/staticmap?style=osm-bright&width=600&height=400&center=lonlat:0,0&zoom=14&apiKey=${
-    apiConfig.geoapify.apiKey
-  }&marker=lonlat:0,0;color:%23ff0000;size:medium&text=${encodeURIComponent(location)}`
+  if (!location || location === "Not specified") {
+    return ""
+  }
+
+  // Create a Google Maps URL with the location
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`
 }
 
 export function getLocationCoordinates(location: string): Promise<{ lon: number; lat: number } | null> {

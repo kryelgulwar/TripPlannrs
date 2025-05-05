@@ -25,6 +25,7 @@ export default function GenerateItinerary() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [formData, setFormData] = useState({
     destination: "",
+    startingPoint: "", // Make sure this is initialized with an empty string
     startDate: "",
     endDate: "",
     arrivalMode: "",
@@ -68,6 +69,9 @@ export default function GenerateItinerary() {
     if (step === 1) {
       if (!formData.destination) {
         errors.destination = "Destination is required"
+      }
+      if (!formData.startingPoint) {
+        errors.startingPoint = "Starting point is required"
       }
       if (!formData.startDate) {
         errors.startDate = "Start date is required"

@@ -5,15 +5,40 @@ import type React from "react"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
+import { useState, useEffect } from "react"
 
 interface ExtrasFormProps {
   formData: any
   updateFormData: (data: any) => void
+  errors?: Record<string, string>
 }
 
-export function ExtrasForm({ formData, updateFormData }: ExtrasFormProps) {
+export function ExtrasForm({ formData, updateFormData, errors = {} }: ExtrasFormProps) {
+  const [additionalOptions, setAdditionalOptions] = useState({
+    familyFriendly: false,
+    offBeatenPath: false,
+    sustainable: false,
+  })
+
+  useEffect(() => {
+    // Initialize from formData if available
+    if (formData.additionalOptions) {
+      setAdditionalOptions(formData.additionalOptions)
+    }
+  }, [formData.additionalOptions])
+
   const handleSpecialRequestsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     updateFormData({ specialRequests: e.target.value })
+  }
+
+  const handleAccessibilityChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    updateFormData({ accessibility: e.target.value })
+  }
+
+  const handleOptionChange = (option: keyof typeof additionalOptions, checked: boolean) => {
+    const newOptions = { ...additionalOptions, [option]: checked }
+    setAdditionalOptions(newOptions)
+    updateFormData({ additionalOptions: newOptions })
   }
 
   return (
@@ -39,6 +64,8 @@ export function ExtrasForm({ formData, updateFormData }: ExtrasFormProps) {
           placeholder="E.g., wheelchair accessibility, limited mobility considerations, etc."
           className="mt-2"
           rows={3}
+          value={formData.accessibility || ""}
+          onChange={handleAccessibilityChange}
         />
       </div>
 
@@ -46,7 +73,11 @@ export function ExtrasForm({ formData, updateFormData }: ExtrasFormProps) {
         <Label>Additional Options</Label>
 
         <div className="flex items-start space-x-2">
-          <Checkbox id="family-friendly" />
+          <Checkbox
+            id="family-friendly"
+            checked={additionalOptions.familyFriendly}
+            onCheckedChange={(checked) => handleOptionChange("familyFriendly", !!checked)}
+          />
           <div>
             <Label htmlFor="family-friendly" className="font-medium">
               Family-Friendly Activities
@@ -56,7 +87,11 @@ export function ExtrasForm({ formData, updateFormData }: ExtrasFormProps) {
         </div>
 
         <div className="flex items-start space-x-2">
-          <Checkbox id="off-beaten-path" />
+          <Checkbox
+            id="off-beaten-path"
+            checked={additionalOptions.offBeatenPath}
+            onCheckedChange={(checked) => handleOptionChange("offBeatenPath", !!checked)}
+          />
           <div>
             <Label htmlFor="off-beaten-path" className="font-medium">
               Off the Beaten Path
@@ -66,7 +101,11 @@ export function ExtrasForm({ formData, updateFormData }: ExtrasFormProps) {
         </div>
 
         <div className="flex items-start space-x-2">
-          <Checkbox id="sustainable" />
+          <Checkbox
+            id="sustainable"
+            checked={additionalOptions.sustainable}
+            onCheckedChange={(checked) => handleOptionChange("sustainable", !!checked)}
+          />
           <div>
             <Label htmlFor="sustainable" className="font-medium">
               Sustainable Travel Options

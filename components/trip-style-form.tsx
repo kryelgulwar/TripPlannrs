@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect } from "react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -7,9 +8,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 interface TripStyleFormProps {
   formData: any
   updateFormData: (data: any) => void
+  errors?: Record<string, string>
 }
 
-export function TripStyleForm({ formData, updateFormData }: TripStyleFormProps) {
+export function TripStyleForm({ formData, updateFormData, errors = {} }: TripStyleFormProps) {
   const tripStyles = [
     { id: "cultural", label: "Cultural & Historical" },
     { id: "nature", label: "Nature & Outdoors" },
@@ -21,7 +23,20 @@ export function TripStyleForm({ formData, updateFormData }: TripStyleFormProps) 
     { id: "nightlife", label: "Nightlife & Bars" },
   ]
 
+  // Initialize tripStyles if it doesn't exist
+  useEffect(() => {
+    if (!Array.isArray(formData.tripStyles)) {
+      updateFormData({ tripStyles: [] })
+    }
+  }, [formData.tripStyles, updateFormData])
+
   const handleTripStyleChange = (checked: boolean, value: string) => {
+    if (!Array.isArray(formData.tripStyles)) {
+      const newStyles = checked ? [value] : []
+      updateFormData({ tripStyles: newStyles })
+      return
+    }
+
     if (checked) {
       updateFormData({ tripStyles: [...formData.tripStyles, value] })
     } else {
@@ -43,9 +58,12 @@ export function TripStyleForm({ formData, updateFormData }: TripStyleFormProps) 
               <div key={style.id} className="flex items-center space-x-2">
                 <Checkbox
                   id={style.id}
-                  checked={formData.tripStyles.includes(style.id)}
+                  checked={Array.isArray(formData.tripStyles) && formData.tripStyles.includes(style.id)}
                   onCheckedChange={(checked) => handleTripStyleChange(!!checked, style.id)}
-                  disabled={!formData.tripStyles.includes(style.id) && formData.tripStyles.length >= 4}
+                  disabled={
+                    !Array.isArray(formData.tripStyles) ||
+                    (!formData.tripStyles.includes(style.id) && formData.tripStyles.length >= 4)
+                  }
                 />
                 <Label htmlFor={style.id}>{style.label}</Label>
               </div>
@@ -56,7 +74,7 @@ export function TripStyleForm({ formData, updateFormData }: TripStyleFormProps) 
         <div>
           <Label className="mb-2 block">Trip Pace</Label>
           <RadioGroup
-            value={formData.pace}
+            value={formData.pace || "Balanced"}
             onValueChange={(value) => updateFormData({ pace: value })}
             className="space-y-3"
           >
@@ -95,7 +113,7 @@ export function TripStyleForm({ formData, updateFormData }: TripStyleFormProps) 
         <div>
           <Label className="mb-2 block">Wake-up Time</Label>
           <RadioGroup
-            value={formData.wakeUpTime}
+            value={formData.wakeUpTime || "Mid"}
             onValueChange={(value) => updateFormData({ wakeUpTime: value })}
             className="space-y-3"
           >
