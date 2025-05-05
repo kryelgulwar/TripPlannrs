@@ -26,31 +26,13 @@ export function TravelTips({ tips = [] }: TravelTipsProps) {
       category: "Weather Preparation",
       content: ["Check the weather forecast before packing", "Bring layers regardless of season"],
     },
-    {
-      category: "Money & Payments",
-      content: [
-        "Notify your bank of travel plans to prevent card blocks",
-        "Carry some local currency for small purchases",
-      ],
-    },
-    {
-      category: "Emergency Contacts",
-      content: [
-        "Save local emergency numbers in your phone",
-        "Keep a digital and physical copy of important documents",
-      ],
-    },
-    {
-      category: "Health & Safety",
-      content: ["Pack a basic first aid kit with essential medications", "Research common scams in your destination"],
-    },
   ]
 
-  const displayTips = tips && tips.length > 0 ? tips : fallbackTips
+  const displayTips = tips && Array.isArray(tips) && tips.length > 0 ? tips : fallbackTips
 
   // Helper function to get icon based on category
-  const getIconForCategory = (category: string) => {
-    const lowerCategory = (category || "").toLowerCase()
+  const getIconForCategory = (category = "") => {
+    const lowerCategory = category.toLowerCase()
     if (lowerCategory.includes("local") || lowerCategory.includes("custom")) {
       return <Globe className="h-5 w-5" />
     } else if (lowerCategory.includes("food") || lowerCategory.includes("drink")) {

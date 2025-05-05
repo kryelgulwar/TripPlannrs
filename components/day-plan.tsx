@@ -7,7 +7,7 @@ interface DayPlanProps {
 
 export function DayPlan({ itinerary }: DayPlanProps) {
   // Ensure days is an array and has content
-  const days = itinerary?.days && Array.isArray(itinerary.days) ? itinerary.days : []
+  const days = itinerary && itinerary.days && Array.isArray(itinerary.days) ? itinerary.days : []
 
   if (!days.length) {
     return (

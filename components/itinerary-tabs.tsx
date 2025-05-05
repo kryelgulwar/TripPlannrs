@@ -14,26 +14,29 @@ interface ItineraryTabsProps {
 export function ItineraryTabs({ itinerary }: ItineraryTabsProps) {
   const [activeTab, setActiveTab] = useState("day-plan")
 
+  // Safe check for days array
+  const hasDays = itinerary && itinerary.days && Array.isArray(itinerary.days) && itinerary.days.length > 0
+
   return (
     <Tabs defaultValue="day-plan" onValueChange={setActiveTab}>
       <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="day-plan" className="flex items-center gap-2">
-          <MapPin size={16} className={activeTab === "day-plan" ? "text-primary" : ""} />
+          <MapPin size={16} />
           <span className="hidden sm:inline">Day-wise Plan</span>
           <span className="sm:hidden">Plan</span>
         </TabsTrigger>
         <TabsTrigger value="accommodation" className="flex items-center gap-2">
-          <Hotel size={16} className={activeTab === "accommodation" ? "text-primary" : ""} />
+          <Hotel size={16} />
           <span className="hidden sm:inline">Accommodation</span>
           <span className="sm:hidden">Hotels</span>
         </TabsTrigger>
         <TabsTrigger value="travel" className="flex items-center gap-2">
-          <Plane size={16} className={activeTab === "travel" ? "text-primary" : ""} />
+          <Plane size={16} />
           <span className="hidden sm:inline">Travel Details</span>
           <span className="sm:hidden">Travel</span>
         </TabsTrigger>
         <TabsTrigger value="tips" className="flex items-center gap-2">
-          <FileText size={16} className={activeTab === "tips" ? "text-primary" : ""} />
+          <FileText size={16} />
           <span className="hidden sm:inline">Travel Tips</span>
           <span className="sm:hidden">Tips</span>
         </TabsTrigger>
@@ -42,7 +45,7 @@ export function ItineraryTabs({ itinerary }: ItineraryTabsProps) {
       <TabsContent value="day-plan">
         <div className="rounded-lg border p-4">
           <p className="text-muted-foreground">
-            {itinerary?.days && Array.isArray(itinerary.days) && itinerary.days.length > 0
+            {hasDays
               ? "Scroll down to see your day-by-day itinerary with activities, meals, and accommodations."
               : "No day-by-day itinerary available yet."}
           </p>

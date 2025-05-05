@@ -52,7 +52,7 @@ export function TravelDetails({ travelDetails = { arrival: {}, departure: {} } }
   const displayTransportation = transportation.length > 0 ? transportation : fallbackTransportation
 
   // Map transport types to icons
-  const getTransportIcon = (type: string) => {
+  const getTransportIcon = (type = "") => {
     const lowerType = type.toLowerCase()
     if (lowerType.includes("flight") || lowerType.includes("plane") || lowerType.includes("air")) {
       return <Plane className="h-5 w-5" />
@@ -72,7 +72,7 @@ export function TravelDetails({ travelDetails = { arrival: {}, departure: {} } }
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center text-xl">
               {getTransportIcon(transport.type)}
-              <span className="ml-2">{transport.type}</span>
+              <span className="ml-2">{transport.type || "Transportation"}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>

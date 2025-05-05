@@ -37,7 +37,10 @@ export function AccommodationOptions({ accommodations = [] }: AccommodationOptio
     },
   ]
 
-  const displayAccommodations = accommodations && accommodations.length > 0 ? accommodations : fallbackAccommodations
+  const displayAccommodations =
+    accommodations && Array.isArray(accommodations) && accommodations.length > 0
+      ? accommodations
+      : fallbackAccommodations
 
   return (
     <div className="space-y-6">
@@ -69,23 +72,30 @@ export function AccommodationOptions({ accommodations = [] }: AccommodationOptio
                 </div>
               )}
 
-              {accommodation.amenities && accommodation.amenities.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-medium mb-2">Amenities</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {accommodation.amenities.map((amenity: string, i: number) => (
-                      <span
-                        key={i}
-                        className="bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-xs flex items-center"
-                      >
-                        {amenity.includes("WiFi") ? <Wifi className="h-3 w-3 mr-1" /> : null}
-                        {amenity.includes("Breakfast") ? <Utensils className="h-3 w-3 mr-1" /> : null}
-                        {amenity}
-                      </span>
-                    ))}
+              {accommodation.amenities &&
+                Array.isArray(accommodation.amenities) &&
+                accommodation.amenities.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">Amenities</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {accommodation.amenities.map((amenity: string, i: number) => {
+                        const hasWifi = typeof amenity === "string" && amenity.includes("WiFi")
+                        const hasBreakfast = typeof amenity === "string" && amenity.includes("Breakfast")
+
+                        return (
+                          <span
+                            key={i}
+                            className="bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-xs flex items-center"
+                          >
+                            {hasWifi && <Wifi className="h-3 w-3 mr-1" />}
+                            {hasBreakfast && <Utensils className="h-3 w-3 mr-1" />}
+                            {amenity}
+                          </span>
+                        )
+                      })}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {accommodation.notes && (
                 <div>

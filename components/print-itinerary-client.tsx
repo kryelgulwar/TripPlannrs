@@ -128,8 +128,8 @@ export default function PrintItineraryClient({ itineraryId }: PrintItineraryClie
           <div className="mb-6">
             <h2 className="text-xl font-semibold">{itinerary.destination || "Your Trip"}</h2>
             <p className="text-muted-foreground">
-              {itinerary.startDate && new Date(itinerary.startDate).toLocaleDateString()} -
-              {itinerary.endDate && new Date(itinerary.endDate).toLocaleDateString()}
+              {itinerary.startDate ? new Date(itinerary.startDate).toLocaleDateString() : ""} -
+              {itinerary.endDate ? new Date(itinerary.endDate).toLocaleDateString() : ""}
             </p>
           </div>
 

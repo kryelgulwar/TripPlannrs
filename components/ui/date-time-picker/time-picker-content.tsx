@@ -8,26 +8,37 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 interface TimePickerContentProps {
   date?: Date
   setDate?: (date: Date | undefined) => void
+  value?: {
+    hour: number
+    minute: number
+  }
+  onChange?: (value: { hour: number; minute: number }) => void
   hourRef?: React.RefObject<HTMLInputElement>
   minuteRef?: React.RefObject<HTMLInputElement>
 }
 
-export function TimePickerContent({ date, setDate, hourRef, minuteRef }: TimePickerContentProps) {
-  const [hour, setHour] = React.useState<number>(date ? date.getHours() % 12 || 12 : 12)
-  const [minute, setMinute] = React.useState<number>(date ? date.getMinutes() : 0)
-  const [period, setPeriod] = React.useState<"AM" | "PM">(date ? (date.getHours() >= 12 ? "PM" : "AM") : "AM")
+export function TimePickerContent({ date, setDate, value, onChange, hourRef, minuteRef }: TimePickerContentProps) {
+  // Initialize with either the value prop or from the date
+  const [hour, setHour] = React.useState<number>(value ? value.hour % 12 || 12 : date ? date.getHours() % 12 || 12 : 12)
+  const [minute, setMinute] = React.useState<number>(value ? value.minute : date ? date.getMinutes() : 0)
+  const [period, setPeriod] = React.useState<"AM" | "PM">(
+    value ? (value.hour >= 12 ? "PM" : "AM") : date ? (date.getHours() >= 12 ? "PM" : "AM") : "AM",
+  )
 
   // Update the date when the hour, minute, or period changes
   React.useEffect(() => {
-    if (!date || !setDate) {
-      return
+    if (onChange) {
+      onChange({
+        hour: period === "PM" ? (hour === 12 ? 12 : hour + 12) : hour === 12 ? 0 : hour,
+        minute,
+      })
+    } else if (date && setDate) {
+      const newDate = new Date(date)
+      newDate.setHours(period === "PM" ? (hour === 12 ? 12 : hour + 12) : hour === 12 ? 0 : hour)
+      newDate.setMinutes(minute)
+      setDate(newDate)
     }
-
-    const newDate = new Date(date)
-    newDate.setHours(period === "PM" ? (hour === 12 ? 12 : hour + 12) : hour === 12 ? 0 : hour)
-    newDate.setMinutes(minute)
-    setDate(newDate)
-  }, [hour, minute, period, date, setDate])
+  }, [hour, minute, period, date, setDate, onChange])
 
   return (
     <div className="flex items-end gap-2">
@@ -83,7 +94,7 @@ export function TimePickerContent({ date, setDate, hourRef, minuteRef }: TimePic
         <Label htmlFor="period" className="text-xs">
           Period
         </Label>
-        <Select value={period} onValueChange={(value) => setPeriod(value as "AM" | "PM")}>
+        <Select value={period} onValueChange={(value: string) => setPeriod(value as "AM" | "PM")}>
           <SelectTrigger id="period" className="w-16">
             <SelectValue placeholder="AM/PM" />
           </SelectTrigger>

@@ -14,11 +14,8 @@ interface TimePickerProps {
 }
 
 export function TimePicker({ date, setDate }: TimePickerProps) {
-  const [selectedTime, setSelectedTime] = React.useState<Date | undefined>(date)
-
-  React.useEffect(() => {
-    setSelectedTime(date)
-  }, [date])
+  const minuteRef = React.useRef<HTMLInputElement>(null)
+  const hourRef = React.useRef<HTMLInputElement>(null)
 
   return (
     <Popover>
@@ -29,14 +26,17 @@ export function TimePicker({ date, setDate }: TimePickerProps) {
         >
           <Clock className="mr-2 h-4 w-4" />
           {date ? (
-            <span>{date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+            date.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
           ) : (
             <span>Pick a time</span>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-3">
-        <TimePickerContent date={selectedTime} setDate={setDate} />
+      <PopoverContent className="w-auto p-4">
+        <TimePickerContent date={date} setDate={setDate} hourRef={hourRef} minuteRef={minuteRef} />
       </PopoverContent>
     </Popover>
   )
