@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
-import { Navbar } from "@/components/navbar"
+import Navbar from "@/components/navbar"
 import { createItinerary } from "@/lib/db"
 import Link from "next/link"
 
@@ -71,21 +71,19 @@ export default function Generate() {
   // Show loading state
   if (loading) {
     return (
-      <>
+      <div>
         <Navbar />
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex justify-center items-center min-h-[60vh]">
-            <p>Loading...</p>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <p className="text-center py-12">Loading...</p>
         </div>
-      </>
+      </div>
     )
   }
 
   return (
-    <>
+    <div>
       <Navbar />
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <Link href="/dashboard" className="text-blue-600 hover:underline">
             &larr; Back to Dashboard
@@ -94,8 +92,8 @@ export default function Generate() {
 
         <h1 className="text-2xl font-bold mb-6">Create New Trip</h1>
 
-        <div className="border rounded-lg p-6">
-          <form onSubmit={handleSubmit}>
+        <div className="max-w-2xl mx-auto">
+          <form onSubmit={handleSubmit} className="border rounded-md p-6">
             <div className="mb-4">
               <label htmlFor="destination" className="block text-sm font-medium text-gray-700 mb-1">
                 Destination
@@ -108,11 +106,11 @@ export default function Generate() {
                 value={formData.destination}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border rounded-md"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 mb-4">
               <div>
                 <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
                   Start Date
@@ -124,7 +122,7 @@ export default function Generate() {
                   value={formData.startDate}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-2 border rounded-md"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
               <div>
@@ -138,7 +136,7 @@ export default function Generate() {
                   value={formData.endDate}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-2 border rounded-md"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -154,16 +152,20 @@ export default function Generate() {
                 value={formData.preferences}
                 onChange={handleChange}
                 rows={4}
-                className="w-full px-3 py-2 border rounded-md"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
 
-            <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-md" disabled={isSubmitting}>
+            <button
+              type="submit"
+              className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? "Generating..." : "Generate Itinerary"}
             </button>
           </form>
         </div>
       </div>
-    </>
+    </div>
   )
 }

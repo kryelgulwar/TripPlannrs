@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { getItineraryById } from "@/lib/db"
-import { Navbar } from "@/components/navbar"
+import Navbar from "@/components/navbar"
 import Link from "next/link"
 
 export default function ItineraryDetail({ params }) {
@@ -52,23 +52,21 @@ export default function ItineraryDetail({ params }) {
   // Show loading state
   if (loading || isLoading) {
     return (
-      <>
+      <div>
         <Navbar />
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex justify-center items-center min-h-[60vh]">
-            <p>Loading...</p>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <p className="text-center py-12">Loading...</p>
         </div>
-      </>
+      </div>
     )
   }
 
   // If no itinerary found
   if (!itinerary) {
     return (
-      <>
+      <div>
         <Navbar />
-        <div className="container mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center py-12">
             <h1 className="text-xl font-bold mb-4">Itinerary Not Found</h1>
             <p className="mb-6">
@@ -79,14 +77,14 @@ export default function ItineraryDetail({ params }) {
             </Link>
           </div>
         </div>
-      </>
+      </div>
     )
   }
 
   return (
-    <>
+    <div>
       <Navbar />
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <Link href="/dashboard" className="text-blue-600 hover:underline">
             &larr; Back to Dashboard
@@ -98,8 +96,8 @@ export default function ItineraryDetail({ params }) {
           <p className="text-gray-600">{itinerary.destination}</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="border rounded-lg p-4">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 mb-6">
+          <div className="border rounded-md p-4">
             <h2 className="font-semibold mb-2">Dates</h2>
             <p>
               {itinerary.startDate && itinerary.endDate
@@ -109,11 +107,11 @@ export default function ItineraryDetail({ params }) {
                 : "Dates not specified"}
             </p>
           </div>
-          <div className="border rounded-lg p-4">
+          <div className="border rounded-md p-4">
             <h2 className="font-semibold mb-2">Duration</h2>
             <p>{itinerary.duration ? `${itinerary.duration} days` : "Duration not specified"}</p>
           </div>
-          <div className="border rounded-lg p-4">
+          <div className="border rounded-md p-4">
             <h2 className="font-semibold mb-2">Status</h2>
             <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
               {itinerary.status || "Draft"}
@@ -122,13 +120,13 @@ export default function ItineraryDetail({ params }) {
         </div>
 
         {itinerary.preferences && (
-          <div className="border rounded-lg p-4 mb-6">
+          <div className="border rounded-md p-4 mb-6">
             <h2 className="font-semibold mb-2">Preferences</h2>
             <p>{itinerary.preferences}</p>
           </div>
         )}
 
-        <div className="border rounded-lg p-4">
+        <div className="border rounded-md p-4">
           <h2 className="font-semibold mb-2">Itinerary Details</h2>
           <div className="text-center py-8">
             <p className="mb-4">Your itinerary is being generated. Check back soon!</p>
@@ -136,6 +134,6 @@ export default function ItineraryDetail({ params }) {
           </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }
