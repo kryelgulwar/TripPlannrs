@@ -4,13 +4,8 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { Navbar } from "@/components/navbar"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { createItinerary } from "@/lib/db"
-import { ArrowRight, Loader2 } from "lucide-react"
+import Link from "next/link"
 
 export default function Generate() {
   const { user, loading } = useAuth()
@@ -80,10 +75,7 @@ export default function Generate() {
         <Navbar />
         <div className="container mx-auto px-4 py-8">
           <div className="flex justify-center items-center min-h-[60vh]">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-4 text-muted-foreground">Loading...</p>
-            </div>
+            <p>Loading...</p>
           </div>
         </div>
       </>
@@ -93,85 +85,83 @@ export default function Generate() {
   return (
     <>
       <Navbar />
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold mb-6">Create New Trip</h1>
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
+        <div className="mb-6">
+          <Link href="/dashboard" className="text-blue-600 hover:underline">
+            &larr; Back to Dashboard
+          </Link>
+        </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Trip Details</CardTitle>
-              <CardDescription>
-                Enter your trip details and preferences to generate a personalized itinerary.
-              </CardDescription>
-            </CardHeader>
-            <form onSubmit={handleSubmit}>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="destination">Destination</Label>
-                  <Input
-                    id="destination"
-                    name="destination"
-                    placeholder="e.g., Tokyo, Japan"
-                    value={formData.destination}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
+        <h1 className="text-2xl font-bold mb-6">Create New Trip</h1>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="startDate">Start Date</Label>
-                    <Input
-                      id="startDate"
-                      name="startDate"
-                      type="date"
-                      value={formData.startDate}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="endDate">End Date</Label>
-                    <Input
-                      id="endDate"
-                      name="endDate"
-                      type="date"
-                      value={formData.endDate}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                </div>
+        <div className="border rounded-lg p-6">
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label htmlFor="destination" className="block text-sm font-medium text-gray-700 mb-1">
+                Destination
+              </label>
+              <input
+                id="destination"
+                name="destination"
+                type="text"
+                placeholder="e.g., Tokyo, Japan"
+                value={formData.destination}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border rounded-md"
+              />
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="preferences">Preferences</Label>
-                  <Textarea
-                    id="preferences"
-                    name="preferences"
-                    placeholder="Tell us about your interests, budget, travel style, etc."
-                    value={formData.preferences}
-                    onChange={handleChange}
-                    rows={4}
-                  />
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      Generate Itinerary
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </>
-                  )}
-                </Button>
-              </CardFooter>
-            </form>
-          </Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
+                  Start Date
+                </label>
+                <input
+                  id="startDate"
+                  name="startDate"
+                  type="date"
+                  value={formData.startDate}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border rounded-md"
+                />
+              </div>
+              <div>
+                <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">
+                  End Date
+                </label>
+                <input
+                  id="endDate"
+                  name="endDate"
+                  type="date"
+                  value={formData.endDate}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border rounded-md"
+                />
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label htmlFor="preferences" className="block text-sm font-medium text-gray-700 mb-1">
+                Preferences
+              </label>
+              <textarea
+                id="preferences"
+                name="preferences"
+                placeholder="Tell us about your interests, budget, travel style, etc."
+                value={formData.preferences}
+                onChange={handleChange}
+                rows={4}
+                className="w-full px-3 py-2 border rounded-md"
+              />
+            </div>
+
+            <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-md" disabled={isSubmitting}>
+              {isSubmitting ? "Generating..." : "Generate Itinerary"}
+            </button>
+          </form>
         </div>
       </div>
     </>

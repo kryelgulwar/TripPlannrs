@@ -5,10 +5,8 @@ import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { getUserItineraries } from "@/lib/db"
 import { Navbar } from "@/components/navbar"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { PlusCircle, Calendar, MapPin, Clock } from "lucide-react"
 import Link from "next/link"
+import { PlusCircle } from "lucide-react"
 
 export default function Dashboard() {
   const { user, loading } = useAuth()
@@ -51,10 +49,7 @@ export default function Dashboard() {
         <Navbar />
         <div className="container mx-auto px-4 py-8">
           <div className="flex justify-center items-center min-h-[60vh]">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-4 text-muted-foreground">Loading your trips...</p>
-            </div>
+            <p>Loading...</p>
           </div>
         </div>
       </>
@@ -65,68 +60,41 @@ export default function Dashboard() {
     <>
       <Navbar />
       <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">My Trips</h1>
-            <p className="text-muted-foreground mt-1">Manage and view your travel itineraries</p>
-          </div>
-          <Button className="mt-4 md:mt-0" asChild>
-            <Link href="/generate">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Create New Trip
-            </Link>
-          </Button>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">My Trips</h1>
+          <Link href="/generate" className="bg-blue-600 text-white px-4 py-2 rounded-md flex items-center">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            New Trip
+          </Link>
         </div>
 
         {itineraries.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <div className="rounded-full bg-primary/10 p-4 mb-4">
-                <PlusCircle className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">No trips yet</h3>
-              <p className="text-muted-foreground text-center max-w-md mb-6">
-                You haven't created any travel itineraries yet. Create your first trip to get started.
-              </p>
-              <Button asChild>
-                <Link href="/generate">
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Create Your First Trip
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+          <div className="text-center py-12 border rounded-lg">
+            <p className="mb-4">You haven't created any trips yet.</p>
+            <Link href="/generate" className="bg-blue-600 text-white px-4 py-2 rounded-md inline-flex items-center">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Create Your First Trip
+            </Link>
+          </div>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {itineraries.map((itinerary) => (
-              <Card key={itinerary.id} className="overflow-hidden hover:shadow-md transition-shadow">
-                <CardHeader className="pb-3">
-                  <CardTitle>{itinerary.title || "Untitled Trip"}</CardTitle>
-                  <CardDescription className="flex items-center">
-                    <MapPin className="h-3.5 w-3.5 mr-1" />
-                    {itinerary.destination || "Multiple destinations"}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pb-3">
-                  <div className="flex items-center text-sm text-muted-foreground mb-2">
-                    <Calendar className="h-3.5 w-3.5 mr-1.5" />
-                    {itinerary.startDate && itinerary.endDate
-                      ? `${new Date(itinerary.startDate).toLocaleDateString()} - ${new Date(
-                          itinerary.endDate,
-                        ).toLocaleDateString()}`
-                      : "Dates not specified"}
-                  </div>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Clock className="h-3.5 w-3.5 mr-1.5" />
-                    {itinerary.duration ? `${itinerary.duration} days` : "Duration not specified"}
-                  </div>
-                </CardContent>
-                <CardFooter className="pt-2">
-                  <Button variant="outline" className="w-full" asChild>
-                    <Link href={`/itinerary/${itinerary.id}`}>View Details</Link>
-                  </Button>
-                </CardFooter>
-              </Card>
+              <div key={itinerary.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                <h3 className="font-semibold text-lg">{itinerary.title || "Untitled Trip"}</h3>
+                <p className="text-gray-600">{itinerary.destination || "Multiple destinations"}</p>
+                <div className="mt-2 text-sm text-gray-500">
+                  {itinerary.startDate && itinerary.endDate
+                    ? `${new Date(itinerary.startDate).toLocaleDateString()} - ${new Date(
+                        itinerary.endDate,
+                      ).toLocaleDateString()}`
+                    : "Dates not specified"}
+                </div>
+                <div className="mt-4">
+                  <Link href={`/itinerary/${itinerary.id}`} className="text-blue-600 hover:underline">
+                    View Details
+                  </Link>
+                </div>
+              </div>
             ))}
           </div>
         )}
