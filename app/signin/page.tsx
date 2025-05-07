@@ -2,7 +2,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { FcGoogle } from "react-icons/fc"
+import { FcGoogle } from "@/components/icons"
 import { useAuth } from "@/lib/auth-context"
 import { useState } from "react"
 
