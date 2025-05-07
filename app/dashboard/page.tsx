@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { getUserItineraries } from "@/lib/db"
-import Navbar from "@/components/navbar"
+import { Navbar } from "@/components/navbar"
 import Link from "next/link"
 
 export default function Dashboard() {

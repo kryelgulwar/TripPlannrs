@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
-import Navbar from "@/components/navbar"
+import { Navbar } from "@/components/navbar"
 import { createItinerary } from "@/lib/db"
 import Link from "next/link"
 
