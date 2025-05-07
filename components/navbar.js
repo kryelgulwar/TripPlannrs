@@ -2,215 +2,189 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ModeToggle } from "@/components/mode-toggle"
-import { Menu, X, LogOut } from "lucide-react"
 import { usePathname } from "next/navigation"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Menu, X, Moon, Sun } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { useTheme } from "next-themes"
 import { useAuth } from "@/lib/auth-context"
 
 export function Navbar({ onSignInClick }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
+  const { theme, setTheme } = useTheme()
   const pathname = usePathname()
-  const { user, signOut } = useAuth()
+  const { user, loading, signOutUser } = useAuth()
 
   useEffect(() => {
-    console.log("Navbar mounted, user:", user ? user.uid : "none")
-  }, [user])
-
-  const isLoggedIn = !!user
-
-  // Get user initials for avatar
-  const getUserInitials = () => {
-    if (!user || !user.displayName) return "U"
-    return user.displayName
-      .split(" ")
-      .map((name) => name[0])
-      .join("")
-      .toUpperCase()
-  }
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10)
+    }
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
   }
 
-  const handleSignOut = async () => {
-    try {
-      console.log("Signing out...")
-      await signOut()
-      console.log("Signed out successfully")
-    } catch (error) {
-      console.error("Error signing out:", error)
-    }
-  }
-
-  const handleSignInClick = () => {
-    console.log("Sign in button clicked in navbar")
+  const handleSignInClick = (e) => {
+    e.preventDefault()
+    console.log("Sign in button clicked")
     if (onSignInClick) {
       onSignInClick()
     }
   }
 
+  const handleSignOutClick = async (e) => {
+    e.preventDefault()
+    try {
+      await signOutUser()
+    } catch (error) {
+      console.error("Error signing out:", error)
+    }
+  }
+
+  const navLinks = [
+    { href: "#features", label: "Features" },
+    { href: "#testimonials", label: "Testimonials" },
+    { href: "#about", label: "About Us" },
+    { href: "#contact", label: "Contact" },
+  ]
+
+  const isActive = (path) => pathname === path
+
   return (
-    <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-sm">
-      <div className="container mx-auto flex h-14 sm:h-16 items-center justify-between px-4">
-        <Link href={isLoggedIn ? "/dashboard" : "/"} className="flex items-center space-x-2 font-bold">
-          <span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
-            TripPlannrs
-          </span>
-        </Link>
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled ? "bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-sm" : "bg-transparent"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16 items-center">
+          <div className="flex items-center">
+            <Link href="/" className="flex items-center">
+              <span className="text-2xl font-bold text-primary">TripPlannrs</span>
+            </Link>
+          </div>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden items-center space-x-6 md:flex">
-          {isLoggedIn ? (
-            <>
-              <Link href="/generate" className="text-sm hover:text-primary">
-                Generate Itinerary
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex md:items-center md:space-x-6">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  isActive(link.href) ? "text-primary" : "text-gray-600 dark:text-gray-300"
+                }`}
+              >
+                {link.label}
               </Link>
-              <Link href="/dashboard" className="text-sm hover:text-primary">
-                My Trips
-              </Link>
-              <ModeToggle />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || "User"} />
-                      <AvatarFallback className="bg-primary text-primary-foreground">
-                        {getUserInitials()}
-                      </AvatarFallback>
-                    </Avatar>
+            ))}
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="ml-2"
+              aria-label="Toggle theme"
+            >
+              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
+
+            {!loading && (
+              <>
+                {user ? (
+                  <div className="flex items-center gap-2">
+                    <Link href="/dashboard">
+                      <Button variant="outline" size="sm">
+                        Dashboard
+                      </Button>
+                    </Link>
+                    <Button variant="default" size="sm" onClick={handleSignOutClick}>
+                      Sign Out
+                    </Button>
+                  </div>
+                ) : (
+                  <Button variant="default" size="sm" onClick={handleSignInClick}>
+                    Sign In
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="flex flex-col items-start">
-                    <span className="font-medium">{user?.displayName}</span>
-                    <span className="text-xs text-muted-foreground">{user?.email}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Sign Out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </>
-          ) : (
-            <>
-              <Link href="#features" className="text-sm hover:text-primary">
-                Features
-              </Link>
-              <Link href="#testimonials" className="text-sm hover:text-primary">
-                Testimonials
-              </Link>
-              <Link href="#about" className="text-sm hover:text-primary">
-                About Us
-              </Link>
-              <Link href="#contact" className="text-sm hover:text-primary">
-                Contact
-              </Link>
-              <ModeToggle />
-              <Button size="sm" onClick={handleSignInClick}>
-                Sign In
-              </Button>
-            </>
-          )}
-        </nav>
+                )}
+              </>
+            )}
+          </div>
 
-        {/* Mobile Menu Button */}
-        <div className="flex items-center space-x-4 md:hidden">
-          <ModeToggle />
-          {isLoggedIn && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || "User"} />
-                    <AvatarFallback className="bg-primary text-primary-foreground">{getUserInitials()}</AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="flex flex-col items-start">
-                  <span className="font-medium">{user?.displayName}</span>
-                  <span className="text-xs text-muted-foreground">{user?.email}</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Sign Out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-          <button onClick={toggleMenu} className="text-foreground">
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          {/* Mobile Navigation Toggle */}
+          <div className="flex md:hidden items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              aria-label="Toggle theme"
+            >
+              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
+            <Button variant="ghost" size="icon" onClick={toggleMenu} aria-label="Toggle menu">
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Navigation Menu */}
       {isMenuOpen && (
-        <div className="border-b bg-background/95 px-4 py-4 backdrop-blur-sm md:hidden">
-          <nav className="flex flex-col space-y-4">
-            {isLoggedIn ? (
+        <div className="md:hidden bg-white dark:bg-gray-900 shadow-lg">
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  isActive(link.href)
+                    ? "bg-primary/10 text-primary"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
+            {!loading && (
               <>
-                <Link href="/generate" className="hover:text-primary" onClick={toggleMenu}>
-                  Generate Itinerary
-                </Link>
-                <Link href="/dashboard" className="hover:text-primary" onClick={toggleMenu}>
-                  My Trips
-                </Link>
-                <button
-                  onClick={handleSignOut}
-                  className="flex items-center text-destructive hover:text-destructive/80"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign Out
-                </button>
-              </>
-            ) : (
-              <>
-                <Link href="#features" className="hover:text-primary" onClick={toggleMenu}>
-                  Features
-                </Link>
-                <Link href="#testimonials" className="hover:text-primary" onClick={toggleMenu}>
-                  Testimonials
-                </Link>
-                <Link href="#about" className="hover:text-primary" onClick={toggleMenu}>
-                  About Us
-                </Link>
-                <Link href="#contact" className="hover:text-primary" onClick={toggleMenu}>
-                  Contact
-                </Link>
-                <Button
-                  className="w-full"
-                  onClick={() => {
-                    toggleMenu()
-                    if (onSignInClick) {
+                {user ? (
+                  <>
+                    <Link
+                      href="/dashboard"
+                      className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                    <button
+                      className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      onClick={() => {
+                        signOutUser()
+                        setIsMenuOpen(false)
+                      }}
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    onClick={() => {
                       onSignInClick()
-                    }
-                  }}
-                >
-                  Sign In
-                </Button>
+                      setIsMenuOpen(false)
+                    }}
+                  >
+                    Sign In
+                  </button>
+                )}
               </>
             )}
-          </nav>
+          </div>
         </div>
       )}
-    </header>
+    </nav>
   )
 }

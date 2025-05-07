@@ -2,8 +2,16 @@
 
 import type React from "react"
 
-import { ToastProviderWrapper } from "@/components/ui/toast-provider"
+import { ThemeProvider } from "next-themes"
+import { AuthProvider } from "@/lib/auth-context"
+import { ToastProvider } from "@/components/ui/toast-provider"
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  return <ToastProviderWrapper>{children}</ToastProviderWrapper>
+  return (
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <AuthProvider>
+        <ToastProvider>{children}</ToastProvider>
+      </AuthProvider>
+    </ThemeProvider>
+  )
 }

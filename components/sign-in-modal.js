@@ -1,17 +1,16 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
-import { useAuth } from "@/lib/auth-context"
 import { useState } from "react"
-import Link from "next/link"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 import { X } from "lucide-react"
+import { useAuth } from "@/lib/auth-context"
+import { toast } from "@/components/ui/toast"
 
-export function SignInModal({ trigger, open, onOpenChange }) {
-  const { signInWithGoogle } = useAuth()
+export function SignInModal({ isOpen, onClose }) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
+  const { signInWithGoogle } = useAuth()
 
   const handleGoogleSignIn = async () => {
     try {
@@ -20,78 +19,64 @@ export function SignInModal({ trigger, open, onOpenChange }) {
       console.log("Attempting to sign in with Google...")
       await signInWithGoogle()
       console.log("Sign in successful!")
-      // Close the modal after successful sign-in
-      if (onOpenChange) {
-        onOpenChange(false)
-      }
-    } catch (error) {
-      console.error("Error signing in:", error)
-      setError("Failed to sign in. Please try again.")
+      toast({
+        title: "Success!",
+        description: "You have successfully signed in.",
+        variant: "default",
+      })
+      onClose()
+    } catch (err) {
+      console.error("Error signing in with Google:", err)
+      setError(err.message || "Failed to sign in with Google. Please try again.")
+      toast({
+        title: "Error",
+        description: err.message || "Failed to sign in with Google. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
-        <div className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-          <X className="h-4 w-4 cursor-pointer" onClick={() => onOpenChange && onOpenChange(false)} />
-          <span className="sr-only">Close</span>
-        </div>
-
-        <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl">Sign in</CardTitle>
-          <CardDescription>Continue your journey with TripPlannrs</CardDescription>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
+        <DialogHeader>
+          <DialogTitle className="text-center text-xl font-bold">Sign In</DialogTitle>
+          <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+            <X className="h-4 w-4" onClick={onClose} />
+            <span className="sr-only">Close</span>
+          </DialogClose>
+        </DialogHeader>
+        <div className="flex flex-col space-y-4 py-4">
           <Button
-            onClick={handleGoogleSignIn}
             variant="outline"
-            className="flex w-full items-center justify-center gap-2 py-6"
+            onClick={handleGoogleSignIn}
             disabled={isLoading}
+            className="flex items-center justify-center gap-2 w-full"
           >
-            <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
-              <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
-                <path
-                  fill="#4285F4"
-                  d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M -21.484 53.529 C -21.734 52.809 -21.864 52.039 -21.864 51.239 C -21.864 50.439 -21.724 49.669 -21.484 48.949 L -21.484 45.859 L -25.464 45.859 C -26.284 47.479 -26.754 49.299 -26.754 51.239 C -26.754 53.179 -26.284 54.999 -25.464 56.619 L -21.484 53.529 Z"
-                />
-                <path
-                  fill="#EA4335"
-                  d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z"
-                />
-              </g>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px">
+              <path
+                fill="#FFC107"
+                d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"
+              />
+              <path
+                fill="#FF3D00"
+                d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"
+              />
+              <path
+                fill="#4CAF50"
+                d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"
+              />
+              <path
+                fill="#1976D2"
+                d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"
+              />
             </svg>
-            <span>{isLoading ? "Signing in..." : "Continue with Google"}</span>
+            {isLoading ? "Signing in..." : "Sign in with Google"}
           </Button>
-
-          {error && <p className="text-center text-sm text-destructive">{error}</p>}
-        </CardContent>
-
-        <CardFooter className="flex flex-col space-y-4">
-          <div className="text-center text-sm text-muted-foreground">
-            By signing in, you agree to our{" "}
-            <Link href="/terms" className="underline underline-offset-4 hover:text-primary">
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link href="/privacy" className="underline underline-offset-4 hover:text-primary">
-              Privacy Policy
-            </Link>
-            .
-          </div>
-        </CardFooter>
+          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+        </div>
       </DialogContent>
     </Dialog>
   )
