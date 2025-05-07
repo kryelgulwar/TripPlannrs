@@ -1,9 +1,8 @@
 "use client"
 
-import type { ReactNode } from "react"
+import type React from "react"
 
-// Adapted from shadcn/ui toast component
-import { useState, useContext, createContext } from "react"
+import { createContext, useContext, useState } from "react"
 
 type ToastProps = {
   title?: string
@@ -24,12 +23,12 @@ const ToastContext = createContext<ToastContextType>({
   toasts: [],
 })
 
-export const ToastProvider = ({ children }: { children: ReactNode }) => {
+export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   const [toasts, setToasts] = useState<Array<ToastProps & { id: string }>>([])
 
   const toast = (props: ToastProps) => {
-    const id = Math.random().toString(36).substring(2, 9)
-    setToasts((prevToasts) => [...prevToasts, { ...props, id }])
+    const id = Math.random().toString(36).slice(2, 9)
+    setToasts((prev) => [...prev, { ...props, id }])
 
     if (props.duration !== Number.POSITIVE_INFINITY) {
       setTimeout(() => {
@@ -39,7 +38,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const dismiss = (id: string) => {
-    setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id))
+    setToasts((prev) => prev.filter((toast) => toast.id !== id))
   }
 
   return (
@@ -56,15 +55,7 @@ const ToastContainer = () => {
   return (
     <div className="fixed bottom-0 right-0 z-50 flex flex-col gap-2 p-4 md:top-0 md:bottom-auto">
       {toasts.map((toast) => (
-        <div
-          key={toast.id}
-          className={`rounded-lg border p-4 shadow-md ${
-            toast.variant === "destructive"
-              ? "border-red-500 bg-red-50 text-red-900 dark:bg-red-900 dark:text-red-50"
-              : "bg-white dark:bg-gray-800"
-          }`}
-          role="alert"
-        >
+        <div key={toast.id} className="rounded-lg border p-4 shadow-md bg-white dark:bg-gray-800" role="alert">
           {toast.title && <h3 className="font-medium">{toast.title}</h3>}
           {toast.description && <p className="text-sm text-muted-foreground">{toast.description}</p>}
           <button
@@ -72,7 +63,7 @@ const ToastContainer = () => {
             className="absolute top-2 right-2 rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-700"
             aria-label="Close"
           >
-            &times;
+            ×
           </button>
         </div>
       ))}

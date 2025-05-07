@@ -87,3 +87,7 @@ export const useToast = () => {
   }
   return context
 }
+
+export function ToastProviderWrapper({ children }: { children: React.ReactNode }) {
+  return <ToastProvider>{children}</ToastProvider>
+}

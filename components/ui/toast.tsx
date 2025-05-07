@@ -6,6 +6,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { useToast } from "./use-toast"
 
 const ToastProvider = ToastPrimitives.Provider
 
@@ -96,18 +97,34 @@ const ToastDescription = React.forwardRef<
 ))
 ToastDescription.displayName = ToastPrimitives.Description.displayName
 
-type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
+type ToastPropsFromRadix = React.ComponentPropsWithoutRef<typeof Toast>
 
 type ToastActionElement = React.ReactElement<typeof ToastAction>
 
 export {
-  type ToastProps,
   type ToastActionElement,
   ToastProvider,
   ToastViewport,
-  Toast,
   ToastTitle,
   ToastDescription,
   ToastClose,
   ToastAction,
+  Toast,
+}
+
+interface UseToastProps {
+  title?: string
+  description?: string
+  variant?: "default" | "destructive"
+  duration?: number
+}
+
+export function useToastComponent() {
+  const { toast } = useToast()
+
+  const showToast = (props: UseToastProps) => {
+    toast(props)
+  }
+
+  return { showToast }
 }
