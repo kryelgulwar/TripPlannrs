@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
@@ -22,6 +22,10 @@ export function Navbar({ onSignInClick }) {
   const pathname = usePathname()
   const { user, signOut } = useAuth()
 
+  useEffect(() => {
+    console.log("Navbar mounted, user:", user ? user.uid : "none")
+  }, [user])
+
   const isLoggedIn = !!user
 
   // Get user initials for avatar
@@ -39,7 +43,20 @@ export function Navbar({ onSignInClick }) {
   }
 
   const handleSignOut = async () => {
-    await signOut()
+    try {
+      console.log("Signing out...")
+      await signOut()
+      console.log("Signed out successfully")
+    } catch (error) {
+      console.error("Error signing out:", error)
+    }
+  }
+
+  const handleSignInClick = () => {
+    console.log("Sign in button clicked in navbar")
+    if (onSignInClick) {
+      onSignInClick()
+    }
   }
 
   return (
@@ -103,7 +120,7 @@ export function Navbar({ onSignInClick }) {
                 Contact
               </Link>
               <ModeToggle />
-              <Button size="sm" onClick={onSignInClick}>
+              <Button size="sm" onClick={handleSignInClick}>
                 Sign In
               </Button>
             </>
@@ -182,7 +199,9 @@ export function Navbar({ onSignInClick }) {
                   className="w-full"
                   onClick={() => {
                     toggleMenu()
-                    onSignInClick && onSignInClick()
+                    if (onSignInClick) {
+                      onSignInClick()
+                    }
                   }}
                 >
                   Sign In

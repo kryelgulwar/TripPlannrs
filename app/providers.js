@@ -1,7 +1,16 @@
 "use client"
 
-import { ToastProvider } from "@/components/ui/toast-provider"
+import { ThemeProvider } from "@/components/theme-provider"
+import { AuthProvider } from "@/lib/auth-context"
+import { Toaster } from "@/components/ui/toast-provider"
 
 export function Providers({ children }) {
-  return <ToastProvider>{children}</ToastProvider>
+  return (
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <AuthProvider>
+        {children}
+        <Toaster />
+      </AuthProvider>
+    </ThemeProvider>
+  )
 }
